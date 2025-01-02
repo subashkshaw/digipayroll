@@ -1,0 +1,393 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  oid         String   @unique // Organization Name ID
+  name        String   // Name of the organization
+  address     String   // Address of the organization
+  logo        String?  // Optional logo file path or URL
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       Users[]  // Relation to Users
+}
+
+model Users {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid            String   @unique // Employee ID
+  name           String   // Employee name
+  email          String   @unique // Employee email
+  password       String   // Employee password
+  dob            DateTime // Date of birth
+  gender         String   // Gender
+  marital_status String   // Marital status
+  doj            DateTime // Date of joining
+  organizationId String   @db.ObjectId // FK to Organization
+  organization   Organization @relation(fields: [organizationId], references: [id]) 
+  manager        String?  // Manager's name or ID
+  department     String?  // Department
+  designation    String?  // Designation or job title
+  mob_number     String?  // Mobile number
+  employment     String?  // Employment type
+  roleId         String   @db.ObjectId
+  role           Roles    @relation(fields: [roleId], references: [id])
+  city           String?  // City
+  state          String?  // State
+  pin_code       String?  // Postal code
+  profile_pic    String?  // Profile picture
+  baseSalary     Float
+  address        Address[]?
+  payrolls       Payroll[]?
+  attendance     Attendance[]?
+  pfDetails      PFDetails[]?
+  leaves         Leave[]?
+  reimbursements Reimbursement[]?
+  travels        Travel[]?
+  assets         Asset[]?
+  documents      Document[]?
+  bankDetails    Bank[]?
+  workExperience WorkExperience[]?
+  resignations   Resignation[]?
+  status         UserStatus @default(ACTIVE) // Employment status
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Roles {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique // Role name
+  description String?  // Role description
+  permissions UserPermissions[]
+  users       Users[]  // Relation to Users
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserPermissions {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  roleId                String   @db.ObjectId
+  role                  Roles    @relation(fields: [roleId], references: [id])
+  viewEmp               Boolean  @default(false)
+  viewAttendance        Boolean  @default(false)
+  viewLeaves            Boolean  @default(false)
+  viewReimbursement     Boolean  @default(false)
+  viewTravel            Boolean  @default(false)
+  viewAsset             Boolean  @default(false)
+  viewDocuments         Boolean  @default(false)
+  viewPayroll           Boolean  @default(false)
+  viewSalary            Boolean  @default(false)
+  viewItd               Boolean  @default(false)
+  viewMonthSalary       Boolean  @default(false)
+  viewAnnualSalary      Boolean  @default(false)
+  viewTdsSummary        Boolean  @default(false)
+  viewBulkAttendance    Boolean  @default(false)
+  viewLeaveCredit       Boolean  @default(false)
+  viewApprovAuth        Boolean  @default(false)
+  viewResignation       Boolean  @default(false)
+  viewAndEditRoles      Boolean  @default(false)
+  createUser            Boolean  @default(false)
+  createSalary          Boolean  @default(false)
+  createPayroll         Boolean  @default(false)
+  createLeave           Boolean  @default(false)
+  createLeaveCredit     Boolean  @default(false)
+  createAttendance      Boolean  @default(false)
+  createBulkAttend      Boolean  @default(false)
+  createAssets          Boolean  @default(false)
+  createApprovAuth      Boolean  @default(false)
+  createTds             Boolean  @default(false)
+  createHoliday         Boolean  @default(false)
+  editUser              Boolean  @default(false)
+  editAttendance        Boolean  @default(false)
+  editLeaves            Boolean  @default(false)
+  editPayroll           Boolean  @default(false)
+  editSalary            Boolean  @default(false)
+  editLeaveCredit       Boolean  @default(false)
+  editBulkAttendance    Boolean  @default(false)
+  editManageAuth        Boolean  @default(false)
+  editAssetLocation     Boolean  @default(false)
+  delUser               Boolean  @default(false)
+  delDocument           Boolean  @default(false)
+  delAttendance         Boolean  @default(false)
+  delLeaves             Boolean  @default(false)
+  delReimbursement      Boolean  @default(false)
+  delTravel             Boolean  @default(false)
+  delAsset              Boolean  @default(false)
+  delResignation        Boolean  @default(false)
+  delHoliday            Boolean  @default(false)
+  delPayroll            Boolean  @default(false)
+  delSalary             Boolean  @default(false)
+  delLeaveCredit        Boolean  @default(false)
+  delBulkAttendance     Boolean  @default(false)
+  delTdsSummary         Boolean  @default(false)
+  delApprovAuth         Boolean  @default(false)
+  managePermissions     Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Address {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid         String   // Employee ID linked to Users.eid
+  users       Users    @relation(fields: [eid], references: [eid])
+  street      String   // Street address
+  city        String   // City
+  state       String   // State
+  postal_code String   // Postal Code
+  country     String   // Country
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Attendance {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid            String   // Employee ID linked to Users.eid
+  users          Users    @relation(fields: [eid], references: [eid])
+  clockin        DateTime
+  clockout       DateTime
+  location       String
+  shift          String
+  status         ApprovalStatus @default(PENDING) // Approval status
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model MonthlyAttendance {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid              String   // Employee ID linked to Users.eid
+  month            DateTime // Month being tracked
+  totalWorkingDays Int      // Total working days in the month
+  daysPresent      Int      // Days the employee was present
+  daysAbsent       Int      // Days the employee was absent
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model PFDetails {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid             String   // Employee ID linked to Users.eid
+  users           Users    @relation(fields: [eid], references: [eid])
+  pf_number       String
+  uan             String
+  employer_share  Float
+  employee_share  Float
+  total_contrib   Float
+  startDate       DateTime // Start date of PF account
+  endDate         DateTime? // End date (optional)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Leave {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid            String   // Employee ID linked to Users.eid
+  users          Users    @relation(fields: [eid], references: [eid])
+  type           String
+  shift          String
+  start_date     DateTime
+  end_date       DateTime
+  duration       Int
+  reason         String
+  remarks        String?
+  approver       String
+  status         ApprovalStatus @default(PENDING) // Approval status
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Reimbursement {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid            String   // Employee ID linked to Users.eid
+  users          Users    @relation(fields: [eid], references: [eid])
+  type           String
+  amount         Float
+  bill_date      DateTime
+  description    String
+  bill_receipt   String
+  remarks        String?
+  approver       String
+  status         ApprovalStatus @default(PENDING) // Approval status
+  payment_status String
+  approve_amount Float?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Travel {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid            String   // Employee ID linked to Users.eid
+  users          Users    @relation(fields: [eid], references: [eid])
+  type           String
+  mode           String
+  doj            DateTime
+  source         String
+  destination    String
+  remarks        String?
+  approver       String
+  status         ApprovalStatus @default(PENDING) // Approval status
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Asset {
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
+  eid             String
+  users           Users           @relation(fields: [eid], references: [eid])
+  type            String
+  request_type    String
+  completion_date DateTime
+  location        String
+  remarks         String?
+  approver        String
+  status          ApprovalStatus  @default(PENDING) // Approval status
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model Assets {
+  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  categoryId    String
+  category      AssetCategory  @relation("CategoryRelation", fields: [categoryId], references: [id])
+  serialNumber  String?
+  purchaseDate  DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model AssetCategory {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   @unique
+  description String?
+  assets      Assets[] @relation("CategoryRelation") // Define the opposite side of the relation
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+
+model Document {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid             String   // Employee ID linked to Users.eid
+  users           Users    @relation(fields: [eid], references: [eid])
+  title           String
+  type            String
+  file            String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Bank {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid             String   // Employee ID linked to Users.eid
+  users           Users    @relation(fields: [eid], references: [eid])
+  bank            String
+  branch          String
+  acc_num         String
+  ifsc            String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model WorkExperience {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid             String   // Employee ID linked to Users.eid
+  users           Users    @relation(fields: [eid], references: [eid])
+  organisation    String
+  designation     String
+  doj             DateTime
+  dor             DateTime?
+  skills          String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Resignation {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid             String   // Employee ID linked to Users.eid
+  users           Users    @relation(fields: [eid], references: [eid])
+  dor             DateTime
+  end_date        DateTime
+  subject         String
+  reason          String
+  approver        String
+  status          ApprovalStatus @default(PENDING) // Approval status
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Location {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String   
+  city        String
+  state       String
+  country     String
+  postalCode  String
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payroll {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  eid         String   // Employee ID linked to Users.eid
+  users       Users    @relation(fields: [eid], references: [eid])
+  pay_month   DateTime
+  pay_year    Int
+  gross_pay   Float
+  net_pay     Float
+  status      PayrollStatus @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  earnings    Earning[]
+  deductions  Deduction[]
+}
+
+model Earning {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  payrollId  String   @db.ObjectId
+  payroll    Payroll  @relation(fields: [payrollId], references: [id])
+  type       String
+  amount     Float
+  createdAt  DateTime @default(now())
+}
+
+model Deduction {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  payrollId  String   @db.ObjectId
+  payroll    Payroll  @relation(fields: [payrollId], references: [id])
+  type       String
+  amount     Float
+  createdAt  DateTime @default(now())
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  ONLEAVE
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PayrollStatus {
+  PENDING
+  PROCESSING
+  APPROVED
+  PAID
+}
+
