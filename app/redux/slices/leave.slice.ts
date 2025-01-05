@@ -1,5 +1,6 @@
 import apiClient from "@/app/utils/apiClient";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Types } from "mongoose";
 
 // Thunks for Leave operations
 export const getLeaves = createAsyncThunk(
@@ -7,9 +8,11 @@ export const getLeaves = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await apiClient.get<any>("leave/all");
-      return response.data.leaves;
+      console.log(response.data.leave, "leaves", response);
+
+      return response.data.leave;
     } catch (error: any) {
-      return rejectWithValue(error?.response?.data.leaves || error.message);
+      return rejectWithValue(error?.response?.data.leave || error.message);
     }
   }
 );
@@ -19,6 +22,7 @@ export const applyLeave = createAsyncThunk(
   async (
     {
       eid,
+      userId,
       type,
       shift,
       start_date,
@@ -30,17 +34,33 @@ export const applyLeave = createAsyncThunk(
     }: any,
     { rejectWithValue }
   ) => {
+    if (
+      !eid ||
+      !userId ||
+      !type ||
+      !shift ||
+      !start_date ||
+      !end_date ||
+      !duration ||
+      !reason ||
+      !approver
+    ) {
+      return rejectWithValue("Missing required fields");
+    }
+
     const payload = {
       eid,
+      userID: new Types.ObjectId(userId),
       type,
       shift,
-      start_date,
-      end_date,
-      duration,
+      start_date: new Date(start_date),
+      end_date: new Date(end_date),
+      duration: parseInt(duration),
       reason,
       remarks,
       approver,
     };
+
     try {
       const response = await apiClient.post<any, typeof payload>(
         "leave",

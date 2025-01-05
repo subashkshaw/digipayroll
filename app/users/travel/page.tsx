@@ -1,71 +1,88 @@
 "use client";
 import CustomTable from "@/app/components/customTable";
 import RightModel from "@/app/components/rightModel";
+import { AppDispatch, RootState } from "@/app/redux";
+import { addTravel, getTravels } from "@/app/redux/slices/travel.slice";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
-type Field = {
-  fieldName: string;
-  type: string;
-  name: string;
-  placeholder: string;
-  onChange: (value: string) => void;
-  options?: string[];
-};
+import React, { use, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-type IpType = {
-  fields: Field[];
-};
 const Travel = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  console.log(user, "user data");
+
+  const {
+    data: travel,
+    isLoading,
+    isError,
+    error,
+  } = useSelector((state: RootState) => state.travel);
+
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("Travel Request");
-  const [success, setSuccess] = useState(false);
-  const [travel, setTravel] = useState([]);
+
+  const [formData, setFormData] = React.useState({
+    eid: "",
+    userId: "",
+    type: "",
+    mode: "",
+    doj: "",
+    source: "",
+    destination: "",
+    remarks: "",
+    approver: "",
+  });
+
+  const handleChange = (key: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      eid: user.eid,
+      userId: user.id,
+    }));
+  };
+  console.log(formData, "form ");
 
   const handleRightModel = () => {
     setOpen(!open);
     setTitle("Travel Request");
   };
-  const [type, setTravelType] = useState("");
-  const [mode, setTravelMode] = useState("");
-  const [doj, setTravelDate] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [source, setSource] = useState("");
-  const [destination, setDestination] = useState("");
-  const [approver, setApprover] = useState("");
 
-  // Handlers for input changes
-  const handleTravelType = (value: string) => setTravelType(value);
-  const handleTravelMode = (value: string) => setTravelMode(value);
-  const handleTravelDate = (value: string) => setTravelDate(value);
-  const handleSource = (value: string) => setSource(value);
-  const handleDestination = (value: string) => setDestination(value);
-  const handleRemarks = (value: string) => setRemarks(value);
-  const handleApprover = (value: string) => setApprover(value);
-
-  const ip: IpType = {
+  const ip = {
     fields: [
       {
         fieldName: "Travel Type",
         name: "type",
         type: "select",
         placeholder: "Select Type",
-        options: ["Local", "Domestic", "International"],
-        onChange: handleTravelType,
+        options: [
+          { label: "Local", value: "local" },
+          { label: "Domestic", value: "domestic" },
+          { label: "International", value: "international" },
+        ],
+        onChange: (value: string) => handleChange("type", value),
       },
       {
         fieldName: "Travel Mode",
         name: "mode",
         type: "select",
         placeholder: "Select Mode",
-        options: ["Cab", "Bus", "Train", "Airline", "Hybrid"],
-        onChange: handleTravelMode,
+        options: [
+          { label: "Cab", value: "cab" },
+          { label: "Bus", value: "bus" },
+          { label: "Train", value: "train" },
+          { label: "Airline", value: "airline" },
+          { label: "Hybrid", value: "hybrid" },
+        ],
+        onChange: (value: string) => handleChange("mode", value),
       },
       {
         fieldName: "Travelling Date",
         name: "doj",
-        type: "text",
+        type: "date",
         placeholder: "Select Date",
-        onChange: handleTravelDate,
+        onChange: (value: string) => handleChange("doj", value),
       },
       {
         fieldName: "Source",
@@ -73,14 +90,14 @@ const Travel = () => {
         type: "select",
         placeholder: "Select Source",
         options: [
-          "Kolkata",
-          "Hyderabad",
-          "Bangalore",
-          "New Delhi",
-          "Mumbai",
-          "Pune",
+          { label: "Kolkata", value: "kolkata" },
+          { label: "Hyderabad", value: "hyderabad" },
+          { label: "Bangalore", value: "bangalore" },
+          { label: "New Delhi", value: "new_delhi" },
+          { label: "Mumbai", value: "mumbai" },
+          { label: "Pune", value: "pune" },
         ],
-        onChange: handleSource,
+        onChange: (value: string) => handleChange("source", value),
       },
       {
         fieldName: "Destination",
@@ -88,21 +105,21 @@ const Travel = () => {
         type: "select",
         placeholder: "Select Destination",
         options: [
-          "Kolkata",
-          "Hyderabad",
-          "Bangalore",
-          "New Delhi",
-          "Mumbai",
-          "Pune",
+          { label: "Kolkata", value: "kolkata" },
+          { label: "Hyderabad", value: "hyderabad" },
+          { label: "Bangalore", value: "bangalore" },
+          { label: "New Delhi", value: "new_delhi" },
+          { label: "Mumbai", value: "mumbai" },
+          { label: "Pune", value: "pune" },
         ],
-        onChange: handleDestination,
+        onChange: (value: string) => handleChange("destination", value),
       },
       {
         fieldName: "Remarks",
         name: "remarks",
         type: "textarea",
         placeholder: "Enter Remarks",
-        onChange: handleRemarks,
+        onChange: (value: string) => handleChange("remarks", value),
       },
       {
         fieldName: "Approver",
@@ -110,59 +127,26 @@ const Travel = () => {
         type: "select",
         placeholder: "Select Approver",
         options: [
-          "Kolkata",
-          "Hyderabad",
-          "Bangalore",
-          "New Delhi",
-          "Mumbai",
-          "Pune",
+          { label: "One", value: "one" },
+          { label: "Two", value: "Two" },
         ],
-        onChange: handleApprover,
+        onChange: (value: string) => handleChange("approver", value),
       },
     ],
   };
-  const eid = "";
   const handleSubmit = async () => {
-    const travelData = {
-      eid,
-      type,
-      mode,
-      doj,
-      source,
-      destination,
-      remarks,
-      approver,
-    };
-    console.log("Sending payload:", travelData);
     try {
-      setSuccess(false);
-      await axios.post("/api/travel", travelData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      setSuccess(true);
+      await dispatch(addTravel(formData)).unwrap();
+      setOpen(false);
     } catch (error) {
-      setSuccess(false);
-      console.error("Error creating travel request:", error);
+      console.error("Error adding user:", error);
     }
   };
-  const fetchData = async () => {
-    try {
-      setSuccess(false);
-      const response = await axios.get("/api/travel/all");
-      console.log(response.data.travel, "Data");
-      setTravel(response.data.travel);
-      setSuccess(true);
-    } catch (error) {
-      setSuccess(false);
-      console.error("Error creating user:", error);
-    }
-  };
+
   useEffect(() => {
-    fetchData();
-    setOpen(false);
-  }, []);
+    dispatch(getTravels());
+  }, [dispatch]);
+
   const columns = [
     { field: "id", headerName: "ID", sortable: true },
     { field: "type", headerName: "Travel Type", sortable: true },
@@ -184,7 +168,12 @@ const Travel = () => {
           Travel Request
         </button>
       </div>
-      <CustomTable columns={columns} data={travel} success={success} />
+      <CustomTable
+        columns={columns}
+        data={travel}
+        success={!isLoading && !isError}
+        error={error}
+      />
     </>
   );
 };

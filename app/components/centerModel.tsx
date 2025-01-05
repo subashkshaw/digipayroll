@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import InputFields from "./input-fields/page";
+import Link from "next/link";
 type IpType = {
   fields: {
     fieldName: string;
@@ -19,20 +20,24 @@ const CenterModel = ({ ip, title, submit }: RightModelProps) => {
   useEffect(() => {}, [title]);
   return (
     <>
-      <div className="flex min-h-full w-96 items-center justify-center bg-white border-r rounded-l-md shadow-md">
-        <div className="px-5 py-3 pb-2 w-80">
-          <div className="border-gray-800 border-2 text-center py-2 mb-2">
-            {title}
-          </div>
+      <div className="flex items-center justify-center bg-white border-r rounded-md shadow-md">
+        <div className="p-5 w-80">
+          <div className="text-lg font-bold py-2 mb-3">{title}</div>
           <InputFields ip={ip} />
-          <div className="flex justify-center w-full gap-2 mt-4">
+          <div className="flex justify-center w-full gap-2 mt-4 mb-2">
             <button
               onClick={submit}
-              className="border-2 border-indigo-400 p-2 rounded-md w-1/2"
+              className="border-2 border-blue-500 dark:border-blue-400 p-2 rounded-md w-full mt-1"
             >
               Sign In
             </button>
           </div>
+          <Link
+            href="/"
+            className="text-sm font-semibold text-blue-600 hover:underline dark:text-blue-500"
+          >
+            Forgot Password
+          </Link>
         </div>
       </div>
     </>

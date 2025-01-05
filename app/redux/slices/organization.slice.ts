@@ -9,7 +9,9 @@ export const getOrganization = createAsyncThunk(
 
       return response.data.organization;
     } catch (error: any) {
-      return rejectWithValue(error?.response?.data || error.message);
+      return rejectWithValue(
+        error?.response?.data.organization || error.message
+      );
     }
   }
 );

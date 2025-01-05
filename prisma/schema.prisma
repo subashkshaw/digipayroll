@@ -48,18 +48,18 @@ model Users {
   pin_code       String?  // Postal code
   profile_pic    String?  // Profile picture
   baseSalary     Float
-  address        Address[]?
-  payrolls       Payroll[]?
-  attendance     Attendance[]?
-  pfDetails      PFDetails[]?
-  leaves         Leave[]?
-  reimbursements Reimbursement[]?
-  travels        Travel[]?
-  assets         Asset[]?
-  documents      Document[]?
-  bankDetails    Bank[]?
-  workExperience WorkExperience[]?
-  resignations   Resignation[]?
+  address        Address[]
+  payrolls       Payroll[]
+  attendance     Attendance[]
+  pfDetails      PFDetails[]
+  leaves         Leave[]
+  reimbursements Reimbursement[]
+  travels        Travel[]
+  assets         Asset[]
+  documents      Document[]
+  bankDetails    Bank[]
+  workExperience WorkExperience[]
+  resignations   Resignation[]
   status         UserStatus @default(ACTIVE) // Employment status
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -140,7 +140,8 @@ model UserPermissions {
 model Address {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   eid         String   // Employee ID linked to Users.eid
-  users       Users    @relation(fields: [eid], references: [eid])
+  userID      String   @db.ObjectId
+  user        Users    @relation(fields: [userID], references: [id])
   street      String   // Street address
   city        String   // City
   state       String   // State
@@ -153,7 +154,8 @@ model Address {
 model Attendance {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   eid            String   // Employee ID linked to Users.eid
-  users          Users    @relation(fields: [eid], references: [eid])
+  userID         String   @db.ObjectId
+  user           Users    @relation(fields: [userID], references: [id])
   clockin        DateTime
   clockout       DateTime
   location       String
@@ -177,7 +179,8 @@ model MonthlyAttendance {
 model PFDetails {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   eid             String   // Employee ID linked to Users.eid
-  users           Users    @relation(fields: [eid], references: [eid])
+  userID          String   @db.ObjectId
+  user            Users    @relation(fields: [userID], references: [id])
   pf_number       String
   uan             String
   employer_share  Float
@@ -192,7 +195,8 @@ model PFDetails {
 model Leave {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   eid            String   // Employee ID linked to Users.eid
-  users          Users    @relation(fields: [eid], references: [eid])
+  userID         String   @db.ObjectId
+  user           Users    @relation(fields: [userID], references: [id])
   type           String
   shift          String
   start_date     DateTime
@@ -209,7 +213,8 @@ model Leave {
 model Reimbursement {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   eid            String   // Employee ID linked to Users.eid
-  users          Users    @relation(fields: [eid], references: [eid])
+  userID         String   @db.ObjectId
+  user           Users    @relation(fields: [userID], references: [id])
   type           String
   amount         Float
   bill_date      DateTime
@@ -218,7 +223,7 @@ model Reimbursement {
   remarks        String?
   approver       String
   status         ApprovalStatus @default(PENDING) // Approval status
-  payment_status String
+  payment_status PaymentStatus @default(PENDING)
   approve_amount Float?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -227,7 +232,8 @@ model Reimbursement {
 model Travel {
   id             String   @id @default(auto()) @map("_id") @db.ObjectId
   eid            String   // Employee ID linked to Users.eid
-  users          Users    @relation(fields: [eid], references: [eid])
+  userID         String   @db.ObjectId
+  user           Users    @relation(fields: [userID], references: [id])
   type           String
   mode           String
   doj            DateTime
@@ -243,7 +249,8 @@ model Travel {
 model Asset {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
   eid             String
-  users           Users           @relation(fields: [eid], references: [eid])
+  userID          String   @db.ObjectId
+  user            Users    @relation(fields: [userID], references: [id])
   type            String
   request_type    String
   completion_date DateTime
@@ -279,7 +286,8 @@ model AssetCategory {
 model Document {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   eid             String   // Employee ID linked to Users.eid
-  users           Users    @relation(fields: [eid], references: [eid])
+  userID          String   @db.ObjectId
+  user            Users    @relation(fields: [userID], references: [id])
   title           String
   type            String
   file            String
@@ -290,7 +298,8 @@ model Document {
 model Bank {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   eid             String   // Employee ID linked to Users.eid
-  users           Users    @relation(fields: [eid], references: [eid])
+  userID          String   @db.ObjectId
+  user            Users    @relation(fields: [userID], references: [id])
   bank            String
   branch          String
   acc_num         String
@@ -302,7 +311,8 @@ model Bank {
 model WorkExperience {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   eid             String   // Employee ID linked to Users.eid
-  users           Users    @relation(fields: [eid], references: [eid])
+  userID          String   @db.ObjectId
+  user            Users    @relation(fields: [userID], references: [id])
   organisation    String
   designation     String
   doj             DateTime
@@ -315,7 +325,8 @@ model WorkExperience {
 model Resignation {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   eid             String   // Employee ID linked to Users.eid
-  users           Users    @relation(fields: [eid], references: [eid])
+  userID          String   @db.ObjectId
+  user            Users    @relation(fields: [userID], references: [id])
   dor             DateTime
   end_date        DateTime
   subject         String
@@ -342,7 +353,8 @@ model Location {
 model Payroll {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   eid         String   // Employee ID linked to Users.eid
-  users       Users    @relation(fields: [eid], references: [eid])
+  userID      String   @db.ObjectId
+  user        Users    @relation(fields: [userID], references: [id])
   pay_month   DateTime
   pay_year    Int
   gross_pay   Float
@@ -385,6 +397,12 @@ enum ApprovalStatus {
 }
 
 enum PayrollStatus {
+  PENDING
+  PROCESSING
+  APPROVED
+  PAID
+}
+enum PaymentStatus {
   PENDING
   PROCESSING
   APPROVED

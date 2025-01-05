@@ -1,8 +1,13 @@
 "use client";
 import CustomTable from "@/app/components/customTable";
 import RightModel from "@/app/components/rightModel";
-import axios from "axios";
+import { AppDispatch, RootState } from "@/app/redux";
+import {
+  addReimbursement,
+  getReimbursements,
+} from "@/app/redux/slices/reimbursement.slice";
 import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 type Field = {
   fieldName: string;
   type: string;
@@ -16,126 +21,122 @@ type IpType = {
   fields: Field[];
 };
 const Reimbursement = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  console.log(user, "user data");
+
+  const {
+    data: reimbursements,
+    isLoading,
+    isError,
+    error,
+  } = useSelector((state: RootState) => state.reimbursement);
+
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("Reimbursement Request");
-  const [success, setSuccess] = useState(false);
-  const [reimbursement, setReimbursement] = useState([]);
+
+  const [formData, setFormData] = React.useState({
+    eid: "",
+    userId: "",
+    type: "",
+    amount: "",
+    bill_date: "",
+    description: "",
+    bill_receipt: "",
+    remarks: "",
+    approver: "",
+    approve_amount: "",
+  });
+  // Handlers for input changes
+  const handleChange = (key: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      eid: user.eid,
+      userId: user.id,
+    }));
+  };
+  console.log(formData, "form ");
   const handleRightModel = () => {
     setOpen(!open);
     setTitle("Reimbursement Request");
   };
-  const [type, setType] = useState("");
-  const [amount, setAmount] = useState("");
-  const [bill_date, setBillDate] = useState("");
-  const [description, setDescription] = useState("");
-  const [bill_receipt, setReceipt] = useState("");
-  const [remarks, setRemarks] = useState("");
-  const [approver, setApprover] = useState("");
-  // Handlers for input changes
-  const handleType = (value: string) => setType(value);
-  const handleAmount = (value: string) => setAmount(value);
-  const handleBillDate = (value: string) => setBillDate(value);
-  const handleDescription = (value: string) => setDescription(value);
-  const handleReceipt = (value: string) => setReceipt(value);
-  const handleRemarks = (value: string) => setRemarks(value);
-  const handleApprover = (value: string) => setApprover(value);
-  const ip: IpType = {
+
+  const ip = {
     fields: [
       {
         fieldName: "Reimbursement Type",
         name: "type",
         type: "select",
         placeholder: "Select Type",
-        options: ["Meal", "Travel", "Accommodation"],
-        onChange: handleType,
+        options: [
+          { label: "Meal", value: "meal" },
+          { label: "Travel", value: "travel" },
+          { label: "Accommodation", value: "accommodation" },
+        ],
+        onChange: (value: string) => handleChange("type", value),
       },
       {
         fieldName: "Amount",
         name: "amount",
         type: "text",
         placeholder: "Enter Amount",
-        onChange: handleAmount,
+        onChange: (value: string) => handleChange("amount", value),
       },
       {
         fieldName: "Bill Date",
         name: "bill_date",
-        type: "text",
+        type: "date",
         placeholder: "Enter Date",
-        onChange: handleBillDate,
+        onChange: (value: string) => handleChange("bill_date", value),
       },
       {
         fieldName: "Description",
-        name: "",
+        name: "description",
         type: "textarea",
         placeholder: "Enter Description",
-        onChange: handleDescription,
+        onChange: (value: string) => handleChange("description", value),
       },
       {
         fieldName: "Bill",
         name: "bill_receipt",
         type: "file",
         placeholder: "Upload Bill",
-        onChange: handleReceipt,
+        onChange: (value: string) => handleChange("bill_receipt", value),
       },
       {
         fieldName: "Remarks",
         name: "remarks",
         type: "textarea",
         placeholder: "Enter Remarks",
-        onChange: handleRemarks,
+        onChange: (value: string) => handleChange("remarks", value),
       },
       {
         fieldName: "Approver",
         name: "approver",
         type: "select",
         placeholder: "Select Approver",
-        options: ["One", "Two"],
-        onChange: handleApprover,
+        options: [
+          { label: "One", value: "one" },
+          { label: "Two", value: "two" },
+        ],
+        onChange: (value: string) => handleChange("approver", value),
       },
     ],
   };
-  const eid = "";
   const handleSubmit = async () => {
-    const reimbursementData = {
-      eid,
-      type,
-      amount,
-      bill_date,
-      description,
-      bill_receipt,
-      remarks,
-      approver,
-    };
-    console.log("Sending payload:", reimbursementData);
     try {
-      setSuccess(false);
-      await axios.post("/api/reimbursement", reimbursementData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      setSuccess(true);
+      await dispatch(addReimbursement(formData)).unwrap();
+      setOpen(false);
     } catch (error) {
-      setSuccess(false);
-      console.error("Error creating reimbursement:", error);
+      console.error("Error adding user:", error);
     }
   };
-  const fetchData = async () => {
-    try {
-      setSuccess(false);
-      const response = await axios.get("/api/reimbursement/all");
-      console.log(response.data.reimbursement, "Data");
-      setReimbursement(response.data.reimbursement);
-      setSuccess(true);
-    } catch (error) {
-      setSuccess(false);
-      console.error("Error creating reimbursement:", error);
-    }
-  };
+
   useEffect(() => {
-    fetchData();
-    setOpen(false);
-  }, []);
+    dispatch(getReimbursements());
+  }, [dispatch]);
+
   const columns = [
     { field: "eid", headerName: "Emp.ID", sortable: true },
     { field: "type", headerName: "Reimburdsement Type", sortable: true },
@@ -159,7 +160,12 @@ const Reimbursement = () => {
         </button>
       </div>
 
-      <CustomTable columns={columns} data={reimbursement} success={success} />
+      <CustomTable
+        columns={columns}
+        data={reimbursements}
+        success={!isLoading && !isError}
+        error={error}
+      />
     </>
   );
 };

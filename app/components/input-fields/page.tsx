@@ -30,7 +30,7 @@ export default function InputFields(props: { ip: IpType }) {
           </label>
           {field.type === "text" && (
             <input
-              className="block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+              className="block w-full rounded-md border-0 p-2 mb-1 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
               id={field.fieldName}
               type={field.type}
               name={field.name}
@@ -40,7 +40,7 @@ export default function InputFields(props: { ip: IpType }) {
           )}
           {field.type === "date" && (
             <input
-              className="block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+              className="block w-full rounded-md border-0 p-2 mb-1 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
               id={field.fieldName}
               type={field.type}
               name={field.name}
@@ -50,7 +50,7 @@ export default function InputFields(props: { ip: IpType }) {
           )}
           {field.type === "email" && (
             <input
-              className="block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+              className="block w-full rounded-md border-0 p-2 mb-1 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
               id={field.fieldName}
               type={field.type}
               name={field.name}
@@ -60,7 +60,7 @@ export default function InputFields(props: { ip: IpType }) {
           )}
           {field.type === "password" && (
             <input
-              className="block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+              className="block w-full rounded-md border-0 p-2 mb-1 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
               id={field.fieldName}
               type={field.type}
               name={field.name}
@@ -70,7 +70,7 @@ export default function InputFields(props: { ip: IpType }) {
           )}
           {field.type === "file" && (
             <input
-              className="block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+              className="block w-full rounded-md border-0 p-2 mb-1 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
               id={field.fieldName}
               type={field.type}
               name={field.name}
@@ -80,7 +80,7 @@ export default function InputFields(props: { ip: IpType }) {
           )}
           {field.type === "textarea" && (
             <textarea
-              className="block w-full rounded-md border-0 p-2 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+              className="block w-full rounded-md border-0 p-2 mb-1 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
               id={field.fieldName}
               name={field.name}
               placeholder={field.placeholder}
@@ -90,7 +90,7 @@ export default function InputFields(props: { ip: IpType }) {
 
           {field.type === "select" && field.options && (
             <select
-              className="block w-full rounded-md border-0 p-3 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
+              className="block w-full rounded-md border-0 p-2 mb-1 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm/6"
               id={field.fieldName}
               name={field.name}
               onChange={(e) => field.onChange(e.target.value)}

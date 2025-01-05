@@ -1,5 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 import { RxAvatar } from "react-icons/rx";
 import { IoNotificationsCircleOutline } from "react-icons/io5";
 import {
@@ -7,9 +9,30 @@ import {
   MdOutlineSettings,
   MdOutlinePowerSettingsNew,
 } from "react-icons/md";
+import { AppDispatch, RootState } from "@/app/redux";
+import { logout } from "@/app/redux/slices/auth.slice";
 
 const TopNav = () => {
   const [open, setOpen] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const { isAuthenticated, error } = useSelector(
+    (state: RootState) => state.auth
+  );
+  const handleSignOut = () => {
+    if (confirm("Are you sure you want to log out?")) {
+      dispatch(logout());
+    }
+    router.push("/login");
+  };
+  // Redirect to dashboard if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/users/dashboard");
+    } else {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router]);
   return (
     <>
       <nav className="bg-white rounded-md ml-3">
@@ -73,6 +96,7 @@ const TopNav = () => {
                     </a>
                     <a
                       href="#"
+                      onClick={handleSignOut}
                       className="flex items-center px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       tabIndex={-1}

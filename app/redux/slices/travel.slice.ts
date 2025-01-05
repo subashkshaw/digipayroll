@@ -1,5 +1,6 @@
 import apiClient from "@/app/utils/apiClient";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Types } from "mongoose";
 
 // Thunks for Travel operations
 export const getTravels = createAsyncThunk(
@@ -7,7 +8,9 @@ export const getTravels = createAsyncThunk(
   async (props: undefined, { rejectWithValue }: any) => {
     try {
       const response = await apiClient.get<any>("travel/all");
-      return response.data;
+      console.log(response.data.travel, "All travel data");
+
+      return response.data.travel;
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -17,10 +20,30 @@ export const getTravels = createAsyncThunk(
 export const addTravel = createAsyncThunk(
   "travel/create",
   async (
-    { employeeId, destination, startDate, endDate, purpose }: any,
+    {
+      eid,
+      userId,
+      type,
+      mode,
+      doj,
+      source,
+      destination,
+      remarks,
+      approver,
+    }: any,
     { rejectWithValue }: any
   ) => {
-    const payload = { employeeId, destination, startDate, endDate, purpose };
+    const payload = {
+      eid,
+      userID: new Types.ObjectId(userId),
+      type,
+      mode,
+      doj: new Date(doj),
+      source,
+      destination,
+      remarks,
+      approver,
+    };
     try {
       const response = await apiClient.post<any, typeof payload>(
         "travel",
@@ -36,13 +59,22 @@ export const addTravel = createAsyncThunk(
 export const updateTravel = createAsyncThunk(
   "travel/update",
   async (
-    { travelId, destination, startDate, endDate, purpose }: any,
+    { id, type, mode, doj, source, destination, remarks, approver }: any,
     { rejectWithValue }: any
   ) => {
-    const payload = { destination, startDate, endDate, purpose };
+    const payload = {
+      id,
+      type,
+      mode,
+      doj,
+      source,
+      destination,
+      remarks,
+      approver,
+    };
     try {
       const response = await apiClient.put<any, typeof payload>(
-        `travel/${travelId}`,
+        `travel/${id}`,
         payload
       );
       return response.data;
@@ -54,9 +86,9 @@ export const updateTravel = createAsyncThunk(
 
 export const deleteTravel = createAsyncThunk(
   "travel/delete",
-  async ({ travelId }: any, { rejectWithValue }: any) => {
+  async ({ id }: any, { rejectWithValue }: any) => {
     try {
-      const response = await apiClient.delete<any>(`travel/${travelId}`);
+      const response = await apiClient.delete<any>(`travel/${id}`);
       return response.data;
     } catch (error) {
       return rejectWithValue(error);
@@ -69,14 +101,30 @@ export interface TravelState {
   isLoading: boolean;
   isError: boolean;
   error: string;
+
   data: any[];
+  others: any;
+
+  isUpdating: boolean;
+  updatingError: string;
+
+  isDeleting: boolean;
+  deletingError: string;
 }
 
 const initialState: TravelState = {
   isLoading: false,
   isError: false,
   error: "",
+
   data: [],
+  others: {},
+
+  isUpdating: false,
+  updatingError: "",
+
+  isDeleting: false,
+  deletingError: "",
 };
 
 // Travel Slice
@@ -86,58 +134,73 @@ export const travelSlice = createSlice({
   reducers: {
     clearTravelState: () => initialState,
   },
-  extraReducers: (builder: any) => {
+  extraReducers: (builder) => {
     builder
-      .addCase(getTravels.pending, (state: any) => ({
-        ...state,
-        isLoading: true,
-        isError: false,
-        error: "",
-      }))
-      .addCase(
-        getTravels.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isLoading: false,
-          data: action.payload?.data?.travels || [],
-        })
-      )
-      .addCase(
-        getTravels.rejected,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isLoading: false,
-          isError: true,
-          error: action.payload?.message,
-        })
-      )
-      .addCase(
-        addTravel.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          data: [...state.data, action.payload?.data?.travel],
-        })
-      )
-      .addCase(
-        updateTravel.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          data: state.data.map((trav: any) =>
-            trav.id === action.payload?.data?.travel?.id
-              ? action.payload?.data?.travel
-              : trav
-          ),
-        })
-      )
-      .addCase(
-        deleteTravel.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          data: state.data.filter(
-            (trav: any) => trav.id !== action.payload?.data?.travelId
-          ),
-        })
-      );
+      // Handle getTravels
+      .addCase(getTravels.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.error = "";
+      })
+      .addCase(getTravels.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.data = action.payload || [];
+      })
+      .addCase(getTravels.rejected, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.error = action.payload?.message || "An error occurred.";
+      })
+
+      // Handle addTravels
+      .addCase(addTravel.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.error = "";
+      })
+      .addCase(addTravel.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.data.push(action.payload); // Add the new Travel to the list
+      })
+      .addCase(addTravel.rejected, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.error = action.payload?.message || "Failed to add Travel.";
+      })
+
+      // Handle updateTravels
+      .addCase(updateTravel.pending, (state) => {
+        state.isUpdating = true;
+        state.updatingError = "";
+      })
+      .addCase(updateTravel.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isUpdating = false;
+        const updatedOrg = action.payload;
+        state.data = state.data.map((Trav) =>
+          Trav.oid === updatedOrg.oid ? updatedOrg : Trav
+        );
+      })
+      .addCase(updateTravel.rejected, (state, action: PayloadAction<any>) => {
+        state.isUpdating = false;
+        state.updatingError =
+          action.payload?.message || "Failed to update Travel.";
+      })
+
+      // Handle deleteTravels
+      .addCase(deleteTravel.pending, (state) => {
+        state.isDeleting = true;
+        state.deletingError = "";
+      })
+      .addCase(deleteTravel.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isDeleting = false;
+        const deletedId = action.payload.id;
+        state.data = state.data.filter((Trav) => Trav.id !== deletedId);
+      })
+      .addCase(deleteTravel.rejected, (state, action: PayloadAction<any>) => {
+        state.isDeleting = false;
+        state.deletingError =
+          action.payload?.message || "Failed to delete Travel.";
+      });
   },
 });
 

@@ -1,6 +1,6 @@
 "use client";
-import TopNav from "../nav";
-import Sidebar from "../sidebar/page";
+import TopNav from "./nav";
+import Sidebar from "./sidebar/page";
 
 const UserLayout = ({ children }: { children: React.ReactNode }) => {
   return (

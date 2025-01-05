@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -16,12 +17,16 @@ export async function POST(request: NextRequest) {
 
     console.log("Received user data:", body);
 
+    // Hash the password before saving
+    const hashedPassword = bcrypt.hashSync(body.password, 8);
+
     const user = await prisma.users.create({
       data: {
         ...body,
+        password: hashedPassword, // Save the hashed password
       },
     });
-    console.log(user, "All usert data");
+    console.log(user, "All user data");
 
     // Correct handling of response
     return NextResponse.json(
@@ -32,29 +37,6 @@ export async function POST(request: NextRequest) {
     console.error("Error during POST request:", error);
     return NextResponse.json(
       { error: "An error occurred while processing the create request" },
-      { status: 500 }
-    );
-  }
-}
-export async function GET(request: NextRequest) {
-  const body = await request.json();
-  try {
-    const user = await prisma.users.findFirst({
-      where: {
-        OR: [{ email: body.email }, { mob_number: body.mob_number }],
-        password: body.password,
-      },
-    });
-
-    console.log(user, "User data");
-    return NextResponse.json(
-      { message: "User fetch successfully", user: user || {} },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error during GET request:", error);
-    return NextResponse.json(
-      { error: "An error occurred while processing the fetch request" },
       { status: 500 }
     );
   }

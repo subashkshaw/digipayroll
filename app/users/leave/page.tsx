@@ -8,9 +8,11 @@ import { applyLeave, getLeaves } from "@/app/redux/slices/leave.slice";
 
 const Leave = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  console.log(user, "user data");
 
   const {
-    data: leave,
+    data: leaves,
     isLoading,
     isError,
     error,
@@ -21,6 +23,7 @@ const Leave = () => {
 
   const [formData, setFormData] = React.useState({
     eid: "",
+    userId: "",
     type: "",
     shift: "",
     start_date: "",
@@ -32,7 +35,12 @@ const Leave = () => {
   });
   // Handlers for input changes
   const handleChange = (key: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      eid: user.eid,
+      userId: user.id,
+    }));
   };
   console.log(formData, "form ");
 
@@ -159,7 +167,7 @@ const Leave = () => {
 
       <CustomTable
         columns={columns}
-        data={leave}
+        data={leaves}
         success={!isLoading && !isError}
         error={error}
       />

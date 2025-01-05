@@ -17,7 +17,7 @@ export const getUsers = createAsyncThunk(
 );
 
 export const addUser = createAsyncThunk(
-  "user",
+  "user/add",
   async (
     {
       eid,
@@ -28,7 +28,7 @@ export const addUser = createAsyncThunk(
       gender,
       marital_status,
       doj,
-      useranizationId,
+      organizationId,
       manager,
       department,
       designation,
@@ -52,7 +52,7 @@ export const addUser = createAsyncThunk(
       gender, // Gender (should be string: "Male", "Female", "Others")
       marital_status, // Marital Status
       doj: new Date(doj), // Date of Joining
-      useranizationId: new Types.ObjectId(useranizationId), // MongoDB ObjectId for useranization (make sure it's valid)
+      organizationId: new Types.ObjectId(organizationId), // MongoDB ObjectId for organization (make sure it's valid)
       manager, // Manager's Name/ID (Optional, string)
       department, // Department (Optional, string)
       designation, // Designation (Optional, string)
@@ -72,8 +72,8 @@ export const addUser = createAsyncThunk(
         payload
       );
       return response.data;
-    } catch (error) {
-      return rejectWithValue(error);
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data || error.message);
     }
   }
 );

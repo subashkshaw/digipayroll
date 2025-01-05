@@ -13,8 +13,10 @@ import roleReducer from "./roles.slice";
 import travelReducer from "./travel.slice";
 import userReducer from "./users.slice";
 import workExperienceReducer from "./workExperience.slice";
+import authReducer from "./auth.slice";
 
 const rootReducer = combineReducers({
+  auth: authReducer,
   asset: assetReducer,
   attendance: attendanceReducer,
   bank: bankReducer,

@@ -1,68 +1,83 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/navigation";
 import CenterModel from "../components/centerModel";
-import axios from "axios";
-
-type Field = {
-  fieldName: string;
-  type: string;
-  name: string;
-  placeholder: string;
-  onChange: (value: string) => void;
-};
-
-type IpType = {
-  fields: Field[];
-};
+import { login } from "@/app/redux/slices/auth.slice";
+import { AppDispatch, RootState } from "../redux";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const dispatch = useDispatch<AppDispatch>();
+  const router = useRouter();
+  const { isAuthenticated, error } = useSelector(
+    (state: RootState) => state.auth
+  );
+
+  // Form state for login
+  const [formData, setFormData] = useState({
+    identifier: "", // This will be used for both email and mobile number
+    password: "",
+  });
 
   // Handlers for input changes
-  const handleEmail = (value: string) => setEmail(value);
-  const handlePassword = (value: string) => setPassword(value);
+  const handleChange = (key: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const ip: IpType = {
+  const ip = {
     fields: [
       {
-        fieldName: "Email",
-        type: "email",
-        name: "email",
-        placeholder: "Enter email",
-        onChange: handleEmail,
+        fieldName: "Email or Mobile Number",
+        type: "text",
+        name: "identifier",
+        placeholder: "Enter email or mobile number",
+        onChange: (value: string) => handleChange("identifier", value),
       },
       {
         fieldName: "Password",
         type: "password",
         name: "password",
         placeholder: "Enter password",
-        onChange: handlePassword,
+        onChange: (value: string) => handleChange("password", value),
       },
     ],
   };
-  const eid = "";
+
   const handleSubmit = async () => {
     const loginData = {
-      eid,
-      email,
-      password,
+      identifier: formData.identifier,
+      password: formData.password,
     };
     console.log("Sending payload:", loginData);
     try {
-      await axios.post("/api/login", loginData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await dispatch(login(loginData)).unwrap();
     } catch (error) {
       console.error("Error unable to login:", error);
     }
   };
+
+  // Redirect to dashboard if authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/users/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
   return (
-    <div className="flex justify-center mt-10">
-      <CenterModel ip={ip} title={"Login"} submit={handleSubmit} />
+    <div className="h-screen flex items-center justify-center">
+      <div className="">
+        {error && <p className="text-red-500 text-center">{error}</p>}
+        {isAuthenticated && (
+          <p className="text-green-500 text-center">Login successful!</p>
+        )}
+        <br />
+        <CenterModel
+          ip={ip}
+          title={"Sign in to your account"}
+          submit={handleSubmit}
+        />
+      </div>
     </div>
   );
 }
