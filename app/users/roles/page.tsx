@@ -2,8 +2,10 @@
 import CustomTable from "@/app/components/customTable";
 import RightModel from "@/app/components/rightModel";
 import { AppDispatch, RootState } from "@/app/redux";
-import { addRole, getRoles } from "@/app/redux/slices/roles.slice";
+import { addRole, deleteRole, getRoles } from "@/app/redux/slices/roles.slice";
 import React, { useEffect, useState } from "react";
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 const Roles = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -15,7 +17,7 @@ const Roles = () => {
     error,
   } = useSelector((state: RootState) => state.role);
   console.log(roles, "vgvhgv");
-
+  const { user } = useSelector((state: RootState) => state.auth);
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("Add Role");
 
@@ -27,7 +29,11 @@ const Roles = () => {
 
   // Handlers for input changes
   const handleChange = (key: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      organizationId: user.organizationId,
+    }));
   };
   const handleRightModel = () => {
     setOpen(!open);
@@ -56,29 +62,68 @@ const Roles = () => {
     try {
       await dispatch(addRole(formData)).unwrap();
       setOpen(false);
-      // dispatch(getRoles());
     } catch (error) {
       console.error("Error adding role:", error);
     }
   };
+  // Handle editing a role
+  const handleEdit = (role: any) => {
+    setTitle("Edit Role");
+    setFormData(role); // Populate form with role data
+    console.log(role, "sdbh");
 
+    setOpen(true);
+  };
+
+  // Handle deleting a role
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteRole(id)).unwrap();
+      console.log("Role deleted successfully");
+    } catch (error) {
+      console.error("Error deleting role:", error);
+    }
+  };
   useEffect(() => {
-    console.log("dispath before");
-
     dispatch(getRoles());
-    console.log("dispath after");
   }, [dispatch]);
 
   const columns = [
     { field: "id", headerName: "ID", sortable: true },
     { field: "name", headerName: "Role Name", sortable: true },
     { field: "description", headerName: "Description", sortable: true },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-2">
+          <CiEdit
+            size={20}
+            className="cursor-pointer text-blue-600 mr-2"
+            onClick={() => handleEdit(params.row)}
+          />
+          <MdDeleteOutline
+            size={20}
+            className="cursor-pointer text-red-600"
+            onClick={() => handleDelete(params.row.id)}
+          />
+        </div>
+      ),
+    },
   ];
   console.log(columns, "columns");
 
   return (
     <>
-      {open && <RightModel ip={ip} title={title} submit={handleSubmit} />}
+      {open && (
+        <RightModel
+          ip={ip}
+          title={title}
+          submit={handleSubmit}
+          close={() => setOpen(false)}
+        />
+      )}
       <div className="flex flex-col items-end">
         <button
           onClick={handleRightModel}

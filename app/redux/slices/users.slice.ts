@@ -79,16 +79,59 @@ export const addUser = createAsyncThunk(
 );
 export const updateUser = createAsyncThunk(
   "user/update",
-  async ({ id, name, email, role }: any, { rejectWithValue }: any) => {
-    const payload = {
+  async (
+    {
+      id,
+      eid,
       name,
       email,
-      role,
+      password,
+      dob,
+      gender,
+      marital_status,
+      doj,
+      organizationId,
+      manager,
+      department,
+      designation,
+      mob_number,
+      employment,
+      roleId,
+      city,
+      state,
+      pin_code,
+      profile_pic,
+      baseSalary,
+    }: any,
+    { rejectWithValue }: any
+  ) => {
+    const payload = {
+      id,
+      eid, // Employee ID
+      name, // Employee Name
+      email, // Employee Email
+      password, // Employee Password
+      dob: new Date(dob), // Date of Birth
+      gender, // Gender (should be string: "Male", "Female", "Others")
+      marital_status, // Marital Status
+      doj: new Date(doj), // Date of Joining
+      organizationId: new Types.ObjectId(organizationId), // MongoDB ObjectId for organization (make sure it's valid)
+      manager, // Manager's Name/ID (Optional, string)
+      department, // Department (Optional, string)
+      designation, // Designation (Optional, string)
+      mob_number, // Mobile Number (Optional, string)
+      employment, // Employment Type (Optional, string)
+      roleId: new Types.ObjectId(roleId), // MongoDB ObjectId for role (make sure it's valid)
+      city, // City (Optional, string)
+      state, // State (Optional, string)
+      pin_code, // Postal Code (Optional, string)
+      profile_pic, // Profile Picture (Optional, string)
+      baseSalary, // Base Salary (Float)
     };
 
     try {
       const response = await apiClient.put<any, typeof payload>(
-        `user/${id}`,
+        "user",
         payload
       );
       return response.data;
@@ -98,14 +141,35 @@ export const updateUser = createAsyncThunk(
   }
 );
 
+// export const deleteUser = createAsyncThunk(
+//   "user/delete",
+//   async (id: any, { rejectWithValue }) => {
+//     try {
+//       const response = await apiClient.delete<any>(`user/${id}`); // Send ID in URL
+//       if (!response.ok) {
+//         throw new Error("Failed to delete user");
+//       }
+//       return id; // Return the deleted user's ID
+//     } catch (error: any) {
+//       return rejectWithValue(error?.response?.data || error.message);
+//     }
+//   }
+// );
 export const deleteUser = createAsyncThunk(
   "user/delete",
-  async ({ id }: any, { rejectWithValue }: any) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.delete<any>(`user/${id}`); // Assuming delete also uses GET here
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error);
+      const response = await apiClient.delete(`user/${id}`);
+
+      if (response.status !== 200 && response.status !== 204) {
+        throw new Error("Failed to delete user");
+      }
+
+      return { id }; // Ensure it returns an object
+    } catch (error: any) {
+      return rejectWithValue(
+        error?.response?.data || { message: error.message }
+      );
     }
   }
 );
@@ -207,13 +271,13 @@ export const userSlice = createSlice({
       })
       .addCase(deleteUser.fulfilled, (state, action: PayloadAction<any>) => {
         state.isDeleting = false;
-        const deletedId = action.payload.id;
+        const deletedId = action.payload;
         state.data = state.data.filter((user: any) => user.id !== deletedId);
       })
       .addCase(deleteUser.rejected, (state, action: PayloadAction<any>) => {
         state.isDeleting = false;
         state.deletingError =
-          action.payload?.message || "Failed to delete useranization.";
+          action.payload?.message || "Failed to delete user.";
       });
   },
 });

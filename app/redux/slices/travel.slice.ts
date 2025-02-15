@@ -5,11 +5,10 @@ import { Types } from "mongoose";
 // Thunks for Travel operations
 export const getTravels = createAsyncThunk(
   "travel/all",
-  async (props: undefined, { rejectWithValue }: any) => {
+  async (_, { rejectWithValue }: any) => {
     try {
       const response = await apiClient.get<any>("travel/all");
       console.log(response.data.travel, "All travel data");
-
       return response.data.travel;
     } catch (error) {
       return rejectWithValue(error);
@@ -23,6 +22,7 @@ export const addTravel = createAsyncThunk(
     {
       eid,
       userId,
+      organizationId,
       type,
       mode,
       doj,
@@ -36,6 +36,7 @@ export const addTravel = createAsyncThunk(
     const payload = {
       eid,
       userID: new Types.ObjectId(userId),
+      organizationId: new Types.ObjectId(organizationId), // MongoDB ObjectId for organization (make sure it's valid)
       type,
       mode,
       doj: new Date(doj),
@@ -86,10 +87,10 @@ export const updateTravel = createAsyncThunk(
 
 export const deleteTravel = createAsyncThunk(
   "travel/delete",
-  async ({ id }: any, { rejectWithValue }: any) => {
+  async (id: string, { rejectWithValue }: any) => {
     try {
-      const response = await apiClient.delete<any>(`travel/${id}`);
-      return response.data;
+      await apiClient.delete(`travel/${id}`); // Send ID in URL
+      return id;
     } catch (error) {
       return rejectWithValue(error);
     }

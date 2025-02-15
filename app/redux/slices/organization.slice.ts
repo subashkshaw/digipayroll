@@ -60,10 +60,10 @@ export const updateOrganization = createAsyncThunk(
 
 export const deleteOrganization = createAsyncThunk(
   "organization/delete",
-  async ({ id }: any, { rejectWithValue }) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.delete<any>(`organization/${id}`);
-      return response.data;
+      await apiClient.delete(`organization/${id}`); // Send ID in URL
+      return id;
     } catch (error: any) {
       return rejectWithValue(error?.response?.data || error.message);
     }

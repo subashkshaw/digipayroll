@@ -11,14 +11,13 @@ import {
 } from "react-icons/md";
 import { AppDispatch, RootState } from "@/app/redux";
 import { logout } from "@/app/redux/slices/auth.slice";
+import Link from "next/link";
 
 const TopNav = () => {
   const [open, setOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { isAuthenticated, error } = useSelector(
-    (state: RootState) => state.auth
-  );
+  const { isAuthenticated } = useSelector((state: RootState) => state.auth);
   const handleSignOut = () => {
     if (confirm("Are you sure you want to log out?")) {
       dispatch(logout());
@@ -36,7 +35,7 @@ const TopNav = () => {
   return (
     <>
       <nav className="bg-white rounded-md ml-3">
-        <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+        <div className="mx-auto  px-2 sm:px-6 lg:px-8">
           <div className="relative flex h-14 items-center justify-between">
             <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start"></div>
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
@@ -75,16 +74,16 @@ const TopNav = () => {
                     aria-labelledby="user-menu-button"
                     tabIndex={-1}
                   >
-                    <a
-                      href="#"
+                    <Link
+                      href="./user-control-panel/profile"
                       className="flex items-center px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
                       tabIndex={-1}
                       id="user-menu-item-0"
                     >
                       <MdOutlineAdminPanelSettings className="mr-1" /> Profile
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="#"
                       className="flex items-center px-4 py-2 text-sm text-gray-700"
                       role="menuitem"
@@ -93,8 +92,8 @@ const TopNav = () => {
                     >
                       <MdOutlineSettings className="mr-1" />
                       Settings
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                       href="#"
                       onClick={handleSignOut}
                       className="flex items-center px-4 py-2 text-sm text-gray-700"
@@ -104,7 +103,7 @@ const TopNav = () => {
                     >
                       <MdOutlinePowerSettingsNew className="mr-1" />
                       Sign out
-                    </a>
+                    </Link>
                   </div>
                 )}
               </div>

@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import apiClient from "../../utils/apiClient";
+import { Types } from "mongoose";
 
 // Async actions for Role Management
 export const getRoles = createAsyncThunk(
@@ -16,10 +17,11 @@ export const getRoles = createAsyncThunk(
 
 export const addRole = createAsyncThunk(
   "roles/create",
-  async ({ name, description }: any, { rejectWithValue }) => {
+  async ({ name, description, organizationId }: any, { rejectWithValue }) => {
     const payload = {
       name,
       description,
+      organizationId: new Types.ObjectId(organizationId),
     };
     try {
       const response = await apiClient.post<any, typeof payload>(
@@ -55,10 +57,10 @@ export const updateRole = createAsyncThunk(
 
 export const deleteRole = createAsyncThunk(
   "roles/delete",
-  async ({ id }: any, { rejectWithValue }) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.delete<any>(`user/roles/${id}`);
-      return response.data; // Return the ID for deletion
+      await apiClient.delete(`user/roles/${id}`); // Send ID in URL
+      return id; // Return the ID for deletion
     } catch (error: any) {
       return rejectWithValue(error?.response?.data || error.message);
     }

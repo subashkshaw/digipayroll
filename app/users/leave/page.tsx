@@ -4,7 +4,13 @@ import React, { useEffect, useState } from "react";
 import CustomTable from "@/app/components/customTable";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "@/app/redux";
-import { applyLeave, getLeaves } from "@/app/redux/slices/leave.slice";
+import {
+  applyLeave,
+  deleteLeave,
+  getLeaves,
+} from "@/app/redux/slices/leave.slice";
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline } from "react-icons/md";
 
 const Leave = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -24,6 +30,7 @@ const Leave = () => {
   const [formData, setFormData] = React.useState({
     eid: "",
     userId: "",
+    organizationId: "",
     type: "",
     shift: "",
     start_date: "",
@@ -40,6 +47,7 @@ const Leave = () => {
       [key]: value,
       eid: user.eid,
       userId: user.id,
+      organizationId: user.organizationId,
     }));
   };
   console.log(formData, "form ");
@@ -133,10 +141,26 @@ const Leave = () => {
       await dispatch(applyLeave(formData)).unwrap();
       setOpen(false);
     } catch (error) {
-      console.error("Error adding user:", error);
+      console.error("Error adding leave:", error);
     }
   };
+  // Handle editing a leave
+  const handleEdit = (leave: any) => {
+    setTitle("Edit Leave");
+    setFormData(leave); // Populate form with leave data
+    console.log(leave, "sdbh");
+    setOpen(true);
+  };
 
+  // Handle deleting a leave
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteLeave(id)).unwrap();
+      console.log(id, "Leave deleted successfully");
+    } catch (error) {
+      console.error("Error deleting leave:", error);
+    }
+  };
   useEffect(() => {
     dispatch(getLeaves());
   }, [dispatch]);
@@ -152,10 +176,36 @@ const Leave = () => {
     { field: "remark", headerName: "Remark", sortable: true },
     { field: "approver", headerName: "Approver", sortable: true },
     { field: "status", headerName: "Status", sortable: true },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-2">
+          <CiEdit
+            size={20}
+            className="cursor-pointer text-blue-600 mr-2"
+            onClick={() => handleEdit(params.row)}
+          />
+          <MdDeleteOutline
+            size={20}
+            className="cursor-pointer text-red-600"
+            onClick={() => handleDelete(params.row.id)}
+          />
+        </div>
+      ),
+    },
   ];
   return (
     <>
-      {open && <RightModel ip={ip} title={title} submit={handleSubmit} />}
+      {open && (
+        <RightModel
+          ip={ip}
+          title={title}
+          submit={handleSubmit}
+          close={() => setOpen(false)}
+        />
+      )}
       <div className="flex flex-col items-end">
         <button
           onClick={handleRightModel}

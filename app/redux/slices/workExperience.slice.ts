@@ -54,12 +54,10 @@ export const updateWorkExperience = createAsyncThunk(
 
 export const deleteWorkExperience = createAsyncThunk(
   "work-experirnce/delete",
-  async ({ experienceId }: any, { rejectWithValue }: any) => {
+  async ({ id }: any, { rejectWithValue }: any) => {
     try {
-      const response = await apiClient.delete<any>(
-        `user/work-experirnce/${experienceId}`
-      );
-      return response.data;
+      await apiClient.delete(`user/work-experirnce/${id}`); // Send ID in URL
+      return id;
     } catch (error) {
       return rejectWithValue(error);
     }

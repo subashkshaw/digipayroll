@@ -10,7 +10,9 @@ export async function GET() {
     return NextResponse.json(
       {
         message: "asset fetch successfully",
-        asset: asset || {},
+        data: {
+          asset: asset || {},
+        },
       },
       { status: 200 }
     );

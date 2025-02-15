@@ -23,6 +23,7 @@ export const applyLeave = createAsyncThunk(
     {
       eid,
       userId,
+      organizationId,
       type,
       shift,
       start_date,
@@ -51,6 +52,7 @@ export const applyLeave = createAsyncThunk(
     const payload = {
       eid,
       userID: new Types.ObjectId(userId),
+      organizationId: new Types.ObjectId(organizationId),
       type,
       shift,
       start_date: new Date(start_date),
@@ -116,10 +118,12 @@ export const updateLeave = createAsyncThunk(
 );
 export const deleteLeave = createAsyncThunk(
   "leave/delete",
-  async ({ id }: any, { rejectWithValue }) => {
+  async (id: string, { rejectWithValue }) => {
+    console.log(id, "leave id ");
+
     try {
-      const response = await apiClient.delete<any>(`leave/${id}`);
-      return response.data; // Return the ID for deletion
+      await apiClient.delete(`leave/${id}`); // Send ID in URL
+      return id; // Return the ID for deletion
     } catch (error: any) {
       return rejectWithValue(error?.response?.data || error.message);
     }
@@ -222,13 +226,13 @@ export const leaveSlice = createSlice({
       })
       .addCase(deleteLeave.fulfilled, (state, action: PayloadAction<any>) => {
         state.isDeleting = false;
-        const deletedId = action.payload.id;
-        state.data = state.data.filter((leave) => leave.id !== deletedId);
+        const deletedId = action.payload;
+        state.data = state.data.filter((leave: any) => leave.id !== deletedId);
       })
       .addCase(deleteLeave.rejected, (state, action: PayloadAction<any>) => {
         state.isDeleting = false;
         state.deletingError =
-          action.payload?.message || "Failed to delete role.";
+          action.payload?.message || "Failed to delete leave.";
       });
   },
 });

@@ -5,7 +5,7 @@ import { Types } from "mongoose";
 // Thunks for Reimbursement operations
 export const getReimbursements = createAsyncThunk(
   "reimbursement/all",
-  async (props: undefined, { rejectWithValue }: any) => {
+  async (_, { rejectWithValue }: any) => {
     try {
       const response = await apiClient.get<any>("reimbursement/all");
       console.log(response.data.reimbursement, "All reimbursement data");
@@ -23,6 +23,7 @@ export const addReimbursement = createAsyncThunk(
     {
       eid,
       userId,
+      organizationId,
       type,
       amount,
       bill_date,
@@ -37,6 +38,7 @@ export const addReimbursement = createAsyncThunk(
     const payload = {
       eid,
       userID: new Types.ObjectId(userId),
+      organizationId: new Types.ObjectId(organizationId),
       type,
       amount: parseFloat(amount),
       bill_date: new Date(bill_date),
@@ -99,10 +101,10 @@ export const updateReimbursement = createAsyncThunk(
 
 export const deleteReimbursement = createAsyncThunk(
   "reimbursement/delete",
-  async ({ id }: any, { rejectWithValue }: any) => {
+  async (id: string, { rejectWithValue }: any) => {
     try {
-      const response = await apiClient.delete<any>(`reimbursement/${id}`);
-      return response.data;
+      await apiClient.delete(`reimbursement/${id}`); // Send ID in URL
+      return id;
     } catch (error) {
       return rejectWithValue(error);
     }

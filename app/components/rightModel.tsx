@@ -15,8 +15,9 @@ type RightModelProps = {
   ip: IpType;
   title: string;
   submit: (event: React.FormEvent) => Promise<void>;
+  close: () => void;
 };
-const RightModel = ({ ip, title, submit }: RightModelProps) => {
+const RightModel = ({ ip, title, submit, close }: RightModelProps) => {
   useEffect(() => {}, [title]);
 
   return (
@@ -27,7 +28,10 @@ const RightModel = ({ ip, title, submit }: RightModelProps) => {
         </div>
         <InputFields ip={ip} />
         <div className="flex justify-between w-full gap-2 mt-4">
-          <button className="border-2 border-indigo-400 p-2 rounded-md w-1/2">
+          <button
+            onClick={close}
+            className="border-2 border-indigo-400 p-2 rounded-md w-1/2"
+          >
             Close
           </button>
           <button

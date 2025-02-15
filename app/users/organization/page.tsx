@@ -4,9 +4,12 @@ import RightModel from "@/app/components/rightModel";
 import { AppDispatch, RootState } from "@/app/redux";
 import {
   addOrganization,
+  deleteOrganization,
   getOrganization,
 } from "@/app/redux/slices/organization.slice";
 import React, { useEffect, useState } from "react";
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 const Organization = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -79,7 +82,24 @@ const Organization = () => {
       console.error("Error adding organization:", error);
     }
   };
+  // Handle editing a reimbursement
+  const handleEdit = (organization: any) => {
+    setTitle("Edit Organization");
+    setFormData(organization); // Populate form with organization data
+    console.log(organization, "sdbh");
 
+    setOpen(true);
+  };
+
+  // Handle deleting a organization
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteOrganization(id)).unwrap();
+      console.log("Organization deleted successfully");
+    } catch (error) {
+      console.error("Error deleting organization:", error);
+    }
+  };
   useEffect(() => {
     dispatch(getOrganization());
   }, [dispatch]);
@@ -90,10 +110,36 @@ const Organization = () => {
     { field: "name", headerName: "Organization Name", sortable: true },
     { field: "address", headerName: "Address", sortable: true },
     { field: "logo", headerName: "Logo", sortable: true },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-2">
+          <CiEdit
+            size={20}
+            className="cursor-pointer text-blue-600 mr-2"
+            onClick={() => handleEdit(params.row)}
+          />
+          <MdDeleteOutline
+            size={20}
+            className="cursor-pointer text-red-600"
+            onClick={() => handleDelete(params.row.id)}
+          />
+        </div>
+      ),
+    },
   ];
   return (
     <>
-      {open && <RightModel ip={ip} title={title} submit={handleSubmit} />}
+      {open && (
+        <RightModel
+          ip={ip}
+          title={title}
+          submit={handleSubmit}
+          close={() => setOpen(false)}
+        />
+      )}
       <div className="flex flex-col items-end">
         <button
           onClick={handleRightModel}

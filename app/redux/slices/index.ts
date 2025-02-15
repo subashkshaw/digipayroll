@@ -6,7 +6,8 @@ import documentReducer from "./document.slice";
 import leaveReducer from "./leave.slice";
 import locationReducer from "./locations.slice";
 import organizationReducer from "./organization.slice";
-// import payrollReducer from "./payroll.slice";
+import payrollReducer from "./payroll.slice";
+import paystructureReducer from "./paystructure.slice";
 import reimbursementReducer from "./reimbursement.slice";
 import resignationReducer from "./resignation.slice";
 import roleReducer from "./roles.slice";
@@ -14,7 +15,7 @@ import travelReducer from "./travel.slice";
 import userReducer from "./users.slice";
 import workExperienceReducer from "./workExperience.slice";
 import authReducer from "./auth.slice";
-
+import accessReducer from "./access.slice";
 const rootReducer = combineReducers({
   auth: authReducer,
   asset: assetReducer,
@@ -24,13 +25,15 @@ const rootReducer = combineReducers({
   leave: leaveReducer,
   location: locationReducer,
   organization: organizationReducer,
-  // payroll: payrollReducer,
+  payroll: payrollReducer,
+  paystructure: paystructureReducer,
   reimbursement: reimbursementReducer,
   resignation: resignationReducer,
   role: roleReducer,
   travel: travelReducer,
   user: userReducer,
   workExperience: workExperienceReducer,
+  access: accessReducer,
 });
 
 export default rootReducer;

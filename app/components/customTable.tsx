@@ -7,6 +7,7 @@ type Column = {
   field: string; // Key for accessing the data field
   headerName: string; // Display name for the header
   sortable?: boolean; // Whether this column is sortable
+  renderCell?: (params: { row: Record<string, any> }) => React.ReactNode;
 };
 
 type TableProps = {
@@ -77,7 +78,7 @@ const CustomTable: React.FC<TableProps> = ({ columns = [], data = [] }) => {
 
   return (
     <>
-      <div className="inline-block min-w-full shadow-md rounded-lg overflow-hidden my-2">
+      <div className=" min-w-full shadow-md rounded-lg overflow-auto my-2">
         {columns.length === 0 || data.length === 0 ? (
           <div className="p-4 text-center text-gray-600">
             No data available to display
@@ -131,7 +132,9 @@ const CustomTable: React.FC<TableProps> = ({ columns = [], data = [] }) => {
                           className="px-4 py-4 border-b border-gray-200 bg-white text-sm"
                           key={column.field}
                         >
-                          {row[column.field]}
+                          {column.renderCell
+                            ? column.renderCell({ row })
+                            : row[column.field]}
                         </td>
                       ))}
                     </tr>

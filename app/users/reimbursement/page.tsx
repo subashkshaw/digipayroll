@@ -4,22 +4,14 @@ import RightModel from "@/app/components/rightModel";
 import { AppDispatch, RootState } from "@/app/redux";
 import {
   addReimbursement,
+  deleteReimbursement,
   getReimbursements,
 } from "@/app/redux/slices/reimbursement.slice";
 import React, { useEffect, useState } from "react";
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
-type Field = {
-  fieldName: string;
-  type: string;
-  name: string;
-  placeholder: string;
-  onChange: (value: string) => void;
-  options?: string[];
-};
 
-type IpType = {
-  fields: Field[];
-};
 const Reimbursement = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
@@ -38,6 +30,7 @@ const Reimbursement = () => {
   const [formData, setFormData] = React.useState({
     eid: "",
     userId: "",
+    organizationId: "",
     type: "",
     amount: "",
     bill_date: "",
@@ -54,6 +47,7 @@ const Reimbursement = () => {
       [key]: value,
       eid: user.eid,
       userId: user.id,
+      organizationId: user.organizationId,
     }));
   };
   console.log(formData, "form ");
@@ -129,10 +123,27 @@ const Reimbursement = () => {
       await dispatch(addReimbursement(formData)).unwrap();
       setOpen(false);
     } catch (error) {
-      console.error("Error adding user:", error);
+      console.error("Error adding reimbursement:", error);
     }
   };
+  // Handle editing a reimbursement
+  const handleEdit = (reimbursement: any) => {
+    setTitle("Edit Reimbursement");
+    setFormData(reimbursement); // Populate form with reimbursement data
+    console.log(reimbursement, "sdbh");
 
+    setOpen(true);
+  };
+
+  // Handle deleting a reimbursement
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteReimbursement(id)).unwrap();
+      console.log("Reimbursement deleted successfully");
+    } catch (error) {
+      console.error("Error deleting reimbursement:", error);
+    }
+  };
   useEffect(() => {
     dispatch(getReimbursements());
   }, [dispatch]);
@@ -147,10 +158,36 @@ const Reimbursement = () => {
     { field: "remark", headerName: "Remark", sortable: true },
     { field: "approver", headerName: "Approver", sortable: true },
     { field: "status", headerName: "Status", sortable: true },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-2">
+          <CiEdit
+            size={20}
+            className="cursor-pointer text-blue-600 mr-2"
+            onClick={() => handleEdit(params.row)}
+          />
+          <MdDeleteOutline
+            size={20}
+            className="cursor-pointer text-red-600"
+            onClick={() => handleDelete(params.row.id)}
+          />
+        </div>
+      ),
+    },
   ];
   return (
     <>
-      {open && <RightModel ip={ip} title={title} submit={handleSubmit} />}
+      {open && (
+        <RightModel
+          ip={ip}
+          title={title}
+          submit={handleSubmit}
+          close={() => setOpen(false)}
+        />
+      )}
       <div className="flex flex-col items-end">
         <button
           onClick={handleRightModel}

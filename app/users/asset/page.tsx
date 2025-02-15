@@ -2,13 +2,20 @@
 import CustomTable from "@/app/components/customTable";
 import RightModel from "@/app/components/rightModel";
 import { AppDispatch, RootState } from "@/app/redux";
-import { addAsset, getAsset } from "@/app/redux/slices/asset.slice";
+import {
+  addAsset,
+  deleteAsset,
+  getAssets,
+} from "@/app/redux/slices/asset.slice";
 import React, { useEffect, useState } from "react";
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 
 const Asset = () => {
   const dispatch = useDispatch<AppDispatch>();
-
+  const { user } = useSelector((state: RootState) => state.auth);
+  console.log(user, "user data");
   const {
     data: asset,
     isLoading,
@@ -21,6 +28,8 @@ const Asset = () => {
   // Form state for user creation
   const [formData, setFormData] = React.useState({
     eid: "",
+    userId: "",
+    organizationId: "",
     type: "",
     request_type: "",
     completion_date: "",
@@ -30,8 +39,15 @@ const Asset = () => {
   });
   // Handlers for input changes
   const handleChange = (key: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      eid: user.eid,
+      userId: user.id,
+      organizationId: user.organizationId,
+    }));
   };
+  console.log(formData, "form ");
   const handleRightModel = () => {
     setOpen(!open);
     setTitle("Asset Request");
@@ -44,7 +60,11 @@ const Asset = () => {
         name: "type",
         type: "select",
         placeholder: "Select Type",
-        options: ["Laptop", "Mouse", "Keyboard"],
+        options: [
+          { label: "Laptop", value: "laptop" },
+          { label: "Mouse", value: "mouse" },
+          { label: "Keyboard", value: "keyboard" },
+        ],
         onChange: (value: string) => handleChange("type", value),
       },
       {
@@ -52,13 +72,16 @@ const Asset = () => {
         name: "request_type",
         type: "select",
         placeholder: "Select Type",
-        options: ["Request", "Return"],
+        options: [
+          { label: "Request", value: "request" },
+          { label: "Return", value: "return" },
+        ],
         onChange: (value: string) => handleChange("request_type", value),
       },
       {
         fieldName: "Completion Date",
         name: "completion_date",
-        type: "text",
+        type: "date",
         placeholder: "Select Date",
         onChange: (value: string) => handleChange("completion_date", value),
       },
@@ -68,12 +91,12 @@ const Asset = () => {
         type: "select",
         placeholder: "Select Location",
         options: [
-          "Kolkata",
-          "Hyderabad",
-          "Bangalore",
-          "New Delhi",
-          "Mumbai",
-          "Pune",
+          { label: "Kolkata", value: "kolkata" },
+          { label: "Hyderabad", value: "hyderabad" },
+          { label: "Bangalore", value: "bangalore" },
+          { label: "New Delhi", value: "new_delhi" },
+          { label: "Mumbai", value: "mumbai" },
+          { label: "Pune", value: "pune" },
         ],
         onChange: (value: string) => handleChange("location", value),
       },
@@ -90,12 +113,8 @@ const Asset = () => {
         type: "select",
         placeholder: "Select Approver",
         options: [
-          "Kolkata",
-          "Hyderabad",
-          "Bangalore",
-          "New Delhi",
-          "Mumbai",
-          "Pune",
+          { label: "One", value: "one" },
+          { label: "Two", value: "Two" },
         ],
         onChange: (value: string) => handleChange("approver", value),
       },
@@ -105,14 +124,28 @@ const Asset = () => {
     try {
       await dispatch(addAsset(formData)).unwrap();
       setOpen(false);
-      dispatch(getAsset());
     } catch (error) {
-      console.error("Error adding user:", error);
+      console.error("Error adding asset:", error);
     }
   };
+  // Handle editing a asset
+  const handleEdit = (asset: any) => {
+    setTitle("Edit Asset");
+    setFormData(asset); // Populate form with asset data
+    setOpen(true);
+  };
 
+  // Handle deleting a asset
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteAsset(id)).unwrap();
+      console.log("Asset deleted successfully");
+    } catch (error) {
+      console.error("Error deleting asset:", error);
+    }
+  };
   useEffect(() => {
-    dispatch(getAsset());
+    dispatch(getAssets());
   }, [dispatch]);
 
   const columns = [
@@ -123,10 +156,36 @@ const Asset = () => {
     { field: "location", headerName: "Location", sortable: true },
     { field: "remarks", headerName: "Remarks", sortable: true },
     { field: "approver", headerName: "Approver", sortable: true },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-2">
+          <CiEdit
+            size={20}
+            className="cursor-pointer text-blue-600 mr-2"
+            onClick={() => handleEdit(params.row)}
+          />
+          <MdDeleteOutline
+            size={20}
+            className="cursor-pointer text-red-600"
+            onClick={() => handleDelete(params.row.id)}
+          />
+        </div>
+      ),
+    },
   ];
   return (
     <>
-      {open && <RightModel ip={ip} title={title} submit={handleSubmit} />}
+      {open && (
+        <RightModel
+          ip={ip}
+          title={title}
+          submit={handleSubmit}
+          close={() => setOpen(false)}
+        />
+      )}
       <div className="flex flex-col items-end">
         <button
           onClick={handleRightModel}

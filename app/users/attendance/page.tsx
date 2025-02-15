@@ -2,120 +2,123 @@
 import RightModel from "@/app/components/rightModel";
 import React, { useEffect, useState } from "react";
 import CustomTable from "@/app/components/customTable";
-import axios from "axios";
-type Field = {
-  fieldName: string;
-  type: string;
-  name: string;
-  placeholder: string;
-  onChange: (value: string) => void;
-  options?: string[];
-};
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "@/app/redux";
+import {
+  deleteAttendance,
+  getAttendance,
+  markAttendance,
+} from "@/app/redux/slices/attendance.slice";
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline } from "react-icons/md";
 
-type IpType = {
-  fields: Field[];
-};
 const Attendance = () => {
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("Edit Attendance");
-  const [success, setSuccess] = useState(false);
-  const [attendance, setAttendance] = useState([]);
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  console.log(user, "user data");
 
+  const {
+    data: attendance,
+    isLoading,
+    isError,
+    error,
+  } = useSelector((state: RootState) => state.attendance);
+
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("Mark Attendance");
+  const [formData, setFormData] = React.useState({
+    eid: "",
+    userId: "",
+    organizationId: "",
+    location: "",
+    shift: "",
+  });
+
+  const handleChange = (key: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      eid: user.eid,
+      userId: user.id,
+      organizationId: user.organizationId,
+    }));
+  };
+  console.log(formData, "form ");
   const handleRightModel = () => {
     setOpen(!open);
-    setTitle("Edit Attendance");
+    setTitle("Mark Attendance");
   };
-  const [clockin, setClockIn] = useState("");
-  const [clockout, setClockOut] = useState("");
-  const [location, setLocation] = useState("");
-  const [shift, setShift] = useState("");
 
-  // Handlers for input changes
-  const handleClockIn = (value: string) => setClockIn(value);
-  const handleClockOut = (value: string) => setClockOut(value);
-  const handleLocation = (value: string) => setLocation(value);
-  const handleShift = (value: string) => setShift(value);
-
-  const ip: IpType = {
+  const ip = {
     fields: [
       {
         fieldName: "Clock In",
         name: "clockin",
-        type: "text",
+        type: "date",
         placeholder: "Enter Clock In",
-        onChange: handleClockIn,
+        onChange: (value: string) => handleChange("clockin", value),
       },
       {
         fieldName: "Clock Out",
         name: "clockout",
-        type: "text",
+        type: "date",
         placeholder: "Enter Clock In",
-        onChange: handleClockOut,
+        onChange: (value: string) => handleChange("clockout", value),
       },
       {
         fieldName: "Location",
         name: "location",
         type: "text",
         placeholder: "Enter Location",
-        onChange: handleLocation,
+        onChange: (value: string) => handleChange("location", value),
       },
       {
         fieldName: "Shift",
-        name: "",
+        name: "shift",
         type: "select",
         placeholder: "Select Shift",
         options: [
-          "Morning",
-          "Day",
-          "Evening",
-          "Night",
-          "Split",
-          "Rotational",
-          "Flexible",
+          { label: "Morning", value: "morning" },
+          { label: "Day", value: "day" },
+          { label: "Evening", value: "evening" },
+          { label: "Night", value: "night" },
+          { label: "Split", value: "split" },
+          { label: "Rotational", value: "rotational" },
+          { label: "Flexible", value: "flexible" },
         ],
-        onChange: handleShift,
+        onChange: (value: string) => handleChange("shift", value),
       },
     ],
   };
-  const eid = "";
   const handleSubmit = async () => {
-    const attendanceData = {
-      eid,
-      clockin,
-      clockout,
-      location,
-      shift,
-    };
-    console.log("Sending payload:", attendanceData);
     try {
-      setSuccess(false);
-      await axios.post("/api/attendance", attendanceData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      setSuccess(true);
+      await dispatch(markAttendance(formData)).unwrap();
+      setOpen(false);
     } catch (error) {
-      setSuccess(false);
-      console.error("Error creating attendance:", error);
+      console.error("Error adding attendance:", error);
     }
   };
-  const fetchData = async () => {
+  // Handle editing a attendance
+  const handleEdit = (attendance: any) => {
+    setTitle("Edit Attendance");
+    setFormData(attendance); // Populate form with attendance data
+    console.log(attendance, "sdbh");
+
+    setOpen(true);
+  };
+  // Handle deleting a attendance
+  const handleDelete = async (id: string) => {
     try {
-      setSuccess(false);
-      const response = await axios.get("/api/attendance/all");
-      console.log(response.data.attendance, "Data");
-      setAttendance(response.data.attendance);
-      setSuccess(true);
+      await dispatch(deleteAttendance(id)).unwrap();
+      console.log("Attendance deleted successfully");
     } catch (error) {
-      setSuccess(false);
-      console.error("Error creating attendance:", error);
+      console.error("Error deleting attendance:", error);
     }
   };
   useEffect(() => {
-    fetchData();
-    setOpen(false);
-  }, []);
+    dispatch(getAttendance());
+  }, [dispatch]);
+
   const columns = [
     { field: "eid", headerName: "Emp.ID", sortable: true },
     { field: "clockin", headerName: "Clock In", sortable: true },
@@ -123,20 +126,51 @@ const Attendance = () => {
     { field: "location", headerName: "Location", sortable: true },
     { field: "shift", headerName: "Shift", sortable: true },
     { field: "status", headerName: "Status", sortable: true },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-2">
+          <CiEdit
+            size={20}
+            className="cursor-pointer text-blue-600 mr-2"
+            onClick={() => handleEdit(params.row)}
+          />
+          <MdDeleteOutline
+            size={20}
+            className="cursor-pointer text-red-600"
+            onClick={() => handleDelete(params.row.id)}
+          />
+        </div>
+      ),
+    },
   ];
   return (
     <>
-      {open && <RightModel ip={ip} title={title} submit={handleSubmit} />}
+      {open && (
+        <RightModel
+          ip={ip}
+          title={title}
+          submit={handleSubmit}
+          close={() => setOpen(false)}
+        />
+      )}
       <div className="flex flex-col items-end">
         <button
           onClick={handleRightModel}
           className="border-2 border-indigo-400 p-2 rounded-md text-xs"
         >
-          Edit Attendance
+          Mark Attendance
         </button>
       </div>
 
-      <CustomTable columns={columns} data={attendance} success={success} />
+      <CustomTable
+        columns={columns}
+        data={attendance}
+        success={!isLoading && !isError}
+        error={error}
+      />
     </>
   );
 };

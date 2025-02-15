@@ -2,9 +2,14 @@
 import CustomTable from "@/app/components/customTable";
 import RightModel from "@/app/components/rightModel";
 import { AppDispatch, RootState } from "@/app/redux";
-import { addTravel, getTravels } from "@/app/redux/slices/travel.slice";
-import axios from "axios";
-import React, { use, useEffect, useState } from "react";
+import {
+  addTravel,
+  deleteTravel,
+  getTravels,
+} from "@/app/redux/slices/travel.slice";
+import React, { useEffect, useState } from "react";
+import { CiEdit } from "react-icons/ci";
+import { MdDeleteOutline } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 
 const Travel = () => {
@@ -25,6 +30,7 @@ const Travel = () => {
   const [formData, setFormData] = React.useState({
     eid: "",
     userId: "",
+    organizationId: "",
     type: "",
     mode: "",
     doj: "",
@@ -40,6 +46,7 @@ const Travel = () => {
       [key]: value,
       eid: user.eid,
       userId: user.id,
+      organizationId: user.organizationId,
     }));
   };
   console.log(formData, "form ");
@@ -139,10 +146,27 @@ const Travel = () => {
       await dispatch(addTravel(formData)).unwrap();
       setOpen(false);
     } catch (error) {
-      console.error("Error adding user:", error);
+      console.error("Error adding travel:", error);
     }
   };
+  // Handle editing a travel
+  const handleEdit = (travel: any) => {
+    setTitle("Edit Travel");
+    setFormData(travel); // Populate form with travel data
+    console.log(travel, "sdbh");
 
+    setOpen(true);
+  };
+
+  // Handle deleting a travel
+  const handleDelete = async (id: string) => {
+    try {
+      await dispatch(deleteTravel(id)).unwrap();
+      console.log("Travel deleted successfully");
+    } catch (error) {
+      console.error("Error deleting travel:", error);
+    }
+  };
   useEffect(() => {
     dispatch(getTravels());
   }, [dispatch]);
@@ -156,10 +180,36 @@ const Travel = () => {
     { field: "destination", headerName: "Destination", sortable: true },
     { field: "remarks", headerName: "Remarks", sortable: true },
     { field: "approver", headerName: "Approver", sortable: true },
+    {
+      field: "actions",
+      headerName: "Actions",
+      sortable: false,
+      renderCell: (params: any) => (
+        <div className="flex items-center space-x-2">
+          <CiEdit
+            size={20}
+            className="cursor-pointer text-blue-600 mr-2"
+            onClick={() => handleEdit(params.row)}
+          />
+          <MdDeleteOutline
+            size={20}
+            className="cursor-pointer text-red-600"
+            onClick={() => handleDelete(params.row.id)}
+          />
+        </div>
+      ),
+    },
   ];
   return (
     <>
-      {open && <RightModel ip={ip} title={title} submit={handleSubmit} />}
+      {open && (
+        <RightModel
+          ip={ip}
+          title={title}
+          submit={handleSubmit}
+          close={() => setOpen(false)}
+        />
+      )}
       <div className="flex flex-col items-end">
         <button
           onClick={handleRightModel}

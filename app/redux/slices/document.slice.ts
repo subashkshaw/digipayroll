@@ -48,15 +48,14 @@ export const updateDocument = createAsyncThunk(
     }
   }
 );
-
 export const deleteDocument = createAsyncThunk(
   "document/delete",
-  async ({ documentId }: any, { rejectWithValue }: any) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.delete<any>(`user/document/${documentId}`);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error);
+      await apiClient.delete(`document/bank/${id}`); // Send ID in URL
+      return id; // Return the deleted user's ID
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data || error.message);
     }
   }
 );

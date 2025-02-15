@@ -1,386 +1,464 @@
 "use client";
-import React, { Dispatch, SetStateAction, useState } from "react";
 import RightModel from "./rightModel";
-
-type Field = {
-  name: string;
-  label: string;
-  state: boolean;
-  setter: Dispatch<SetStateAction<boolean>>;
-};
-
-type IpType = {
-  section: string;
-  fields: Field[];
-}[];
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../redux";
+import { useState } from "react";
+import React from "react";
+import { addAccess } from "../redux/slices/access.slice";
 
 const AccessController = () => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  console.log(user, "user data");
+
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("Access Controller");
-  const [createEmp, setCreateEmp] = useState(false);
-  const [createAttendance, setCreateAttendance] = useState(false);
-  const [createBulkAttend, setCreateBulkAttend] = useState(false);
-  const [createLeave, setCreateLeave] = useState(false);
-  const [createLeaveCredit, setCreateLeaveCredit] = useState(false);
-  const [createAssets, setCreateAssets] = useState(false);
-  const [createPayroll, setCreatePayroll] = useState(false);
-  const [createSalary, setCreateSalary] = useState(false);
-  const [createTDSonSal, setCreateTDSonSal] = useState(false);
-  const [createManageAuth, setCreateManageAuth] = useState(false);
-  const [createHoliday, setCreateHoliday] = useState(false);
 
-  const [viewEmp, setViewEmp] = useState(false);
-  const [viewEmpDoc, setViewEmpDoc] = useState(false);
-  const [viewAttendance, setViewAttendance] = useState(false);
-  const [viewBulkAttendance, setViewBulkAttendance] = useState(false);
-  const [viewLeaves, setViewLeaves] = useState(false);
-  const [viewLeaveCredit, setViewLeaveCredit] = useState(false);
-  const [viewReimbursement, setViewReimbursement] = useState(false);
-  const [viewTravelReq, setViewTravelReq] = useState(false);
-  const [viewAssetReqReturn, setViewAssetReqReturn] = useState(false);
-  const [viewPayroll, setViewPayroll] = useState(false);
-  const [viewSalary, setViewSalary] = useState(false);
-  const [viewITD, setViewITD] = useState(false);
-  const [viewMonthSalary, setViewMonthSalary] = useState(false);
-  const [viewAnnualSalary, setViewAnnualSalary] = useState(false);
-  const [viewTDSsummary, setViewTDSsummary] = useState(false);
-  const [viewResignation, setViewResignation] = useState(false);
+  const [formData, setFormData] = React.useState({
+    viewEmp: "",
+    viewAttendance: "",
+    viewLeaves: "",
+    viewReimbursement: "",
+    viewTravel: "",
+    viewAsset: "",
+    viewDocuments: "",
+    viewPayroll: "",
+    viewSalary: "",
+    viewItd: "",
+    viewMonthSalary: "",
+    viewAnnualSalary: "",
+    viewTdsSummary: "",
+    viewBulkAttendance: "",
+    viewLeaveCredit: "",
+    viewApprovAuth: "",
+    viewResignation: "",
+    viewAndEditRoles: "",
+    createUser: "",
+    createSalary: "",
+    createPayroll: "",
+    createLeave: "",
+    createLeaveCredit: "",
+    createAttendance: "",
+    createBulkAttend: "",
+    createAssets: "",
+    createApprovAuth: "",
+    createTds: "",
+    createHoliday: "",
+    editUser: "",
+    editAttendance: "",
+    editLeaves: "",
+    editPayroll: "",
+    editSalary: "",
+    editLeaveCredit: "",
+    editBulkAttendance: "",
+    editManageAuth: "",
+    editAssetLocation: "",
+    delUser: "",
+    delDocument: "",
+    delAttendance: "",
+    delLeaves: "",
+    delReimbursement: "",
+    delTravel: "",
+    delAsset: "",
+    delResignation: "",
+    delHoliday: "",
+    delPayroll: "",
+    delSalary: "",
+    delLeaveCredit: "",
+    delBulkAttendance: "",
+    delTdsSummary: "",
+    delApprovAuth: "",
+    managePermissions: "",
+  });
+  const handleChange = (key: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [key]: value,
+      eid: user.eid,
+      userId: user.id,
+    }));
+  };
 
-  const [editEmp, setEditEmp] = useState(false);
-  const [editAttendance, setEditAttendance] = useState(false);
-  const [editBulkAttendance, setEditBulkAttendance] = useState(false);
-  const [editLeaves, setEditLeaves] = useState(false);
-  const [editLeaveCredit, setEditLeaveCredit] = useState(false);
-  const [editAssetLocation, setEditAssetLocation] = useState(false);
-  const [editPayroll, setEditPayroll] = useState(false);
-  const [editSalary, setEditSalary] = useState(false);
-  const [editManageAuth, setEditManageAuth] = useState(false);
+  const ip = {
+    fields: [
+      {
+        fieldName: "Create Employees",
+        name: "create_emp",
+        type: "checkbox",
+        placeholder: "Enable Employees creation",
+        onChange: (value: any) => handleChange("create_emp", value),
+      },
+      {
+        fieldName: "Create Attendance",
+        name: "create_attendance",
+        type: "checkbox",
+        placeholder: "Enable Attendance creation",
+        onChange: (value: any) => handleChange("create_attendance", value),
+      },
+      {
+        fieldName: "Create Bulk Attendance",
+        name: "create_bulk_attend",
+        type: "checkbox",
+        placeholder: "Enable Bulk Attendance creation",
+        onChange: (value: any) => handleChange("create_bulk_attend", value),
+      },
+      {
+        fieldName: "Create Leaves",
+        name: "create_leave",
+        type: "checkbox",
+        placeholder: "Enable Leaves creation",
+        onChange: (value: any) => handleChange("create_leave", value),
+      },
+      {
+        fieldName: "Create Leaves Credit",
+        name: "create_leave_credit",
+        type: "checkbox",
+        placeholder: "Enable Leaves Credit creation",
+        onChange: (value: any) => handleChange("create_leave_credit", value),
+      },
+      {
+        fieldName: "Create Assets & Location",
+        name: "create_assets",
+        type: "checkbox",
+        placeholder: "Enable Assets & Location creation",
+        onChange: (value: any) => handleChange("create_assets", value),
+      },
+      {
+        fieldName: "Create Payroll",
+        name: "create_payroll",
+        type: "checkbox",
+        placeholder: "Enable Payroll creation",
+        onChange: (value: any) => handleChange("create_payroll", value),
+      },
+      {
+        fieldName: "Create Salary",
+        name: "create_salary",
+        type: "checkbox",
+        placeholder: "Enable Salary creation",
+        onChange: (value: any) => handleChange("create_salary", value),
+      },
+      {
+        fieldName: "Create TDS",
+        name: "create_tds_on_sal",
+        type: "checkbox",
+        placeholder: "Enable TDS On Salary creation",
+        onChange: (value: any) => handleChange("create_tds_on_sal", value),
+      },
+      {
+        fieldName: "Create Approving Authority",
+        name: "create_manage_auth",
+        type: "checkbox",
+        placeholder: "Enable Approving Authority creation",
+        onChange: (value: any) => handleChange("create_manage_auth", value),
+      },
+      {
+        fieldName: "Create Holidays",
+        name: "create_holiday",
+        type: "checkbox",
+        placeholder: "Enable Holidays creation",
+        onChange: (value: any) => handleChange("create_holiday", value),
+      },
 
-  const [delEmp, setDelEmp] = useState(false);
-  const [delDoc, setDelDoc] = useState(false);
-  const [delAttendance, setDelAttendance] = useState(false);
-  const [delBulkAttendance, setDelBulkAttendance] = useState(false);
-  const [delLeaves, setDelLeaves] = useState(false);
-  const [delLeaveCredit, setDelLeaveCredit] = useState(false);
-  const [delReimbursement, setDelReimbursement] = useState(false);
-  const [delTravelReq, setDelTravelReq] = useState(false);
-  const [delAssetReqReturn, setDelAssetReqReturn] = useState(false);
-  const [delPayroll, setDelPayroll] = useState(false);
-  const [delSalary, setDelSalary] = useState(false);
-  const [delManageAuth, setDelManageAuth] = useState(false);
+      {
+        fieldName: "View Employees",
+        name: "view_emp",
+        type: "checkbox",
+        placeholder: "Enable Employees view",
+        onChange: (value: any) => handleChange("view_emp", value),
+      },
+      {
+        fieldName: "View Documents",
+        name: "view_emp_documents",
+        type: "checkbox",
+        placeholder: "Enable Documents view",
+        onChange: (value: any) => handleChange("view_emp_documents", value),
+      },
+      {
+        fieldName: "View Attendance",
+        name: "view_emp_attendance",
+        type: "checkbox",
+        placeholder: "Enable Attendance view",
+        onChange: (value: any) => handleChange("view_emp_attendance", value),
+      },
+      {
+        fieldName: "View Bulk Attendance",
+        name: "view_bulk_attendance",
+        type: "checkbox",
+        placeholder: "Enable Bulk Attendance view",
+        onChange: (value: any) => handleChange("view_bulk_attendance", value),
+      },
+      {
+        fieldName: "View Leaves",
+        name: "view_emp_leaves",
+        type: "checkbox",
+        placeholder: "Enable Leaves view",
+        onChange: (value: any) => handleChange("view_emp_leaves", value),
+      },
+      {
+        fieldName: "View Leaves Credit",
+        name: "view_leave_credit",
+        type: "checkbox",
+        placeholder: "Enable Leaves Credit view",
+        onChange: (value: any) => handleChange("view_leave_credit", value),
+      },
+      {
+        fieldName: "View Reimbursements",
+        name: "view_emp_reimbursement",
+        type: "checkbox",
+        placeholder: "Enable Reimbursements view",
+        onChange: (value: any) => handleChange("view_emp_reimbursement", value),
+      },
+      {
+        fieldName: "View Travel Requests",
+        name: "view_emp_travel_req",
+        type: "checkbox",
+        placeholder: "Enable Travel Requests view",
+        onChange: (value: any) => handleChange("view_emp_travel_req", value),
+      },
+      {
+        fieldName: "View Assets Request & Return",
+        name: "view_asset_req_return",
+        type: "checkbox",
+        placeholder: "Enable Assets Request & Return view",
+        onChange: (value: any) => handleChange("view_asset_req_return", value),
+      },
+      {
+        fieldName: "View Payroll",
+        name: "view_emp_payroll",
+        type: "checkbox",
+        placeholder: "Enable Payroll view",
+        onChange: (value: any) => handleChange("view_emp_payroll", value),
+      },
+      {
+        fieldName: "View Monthly Salary",
+        name: "view_month_sal",
+        type: "checkbox",
+        placeholder: "Enable Monthly Salary view",
+        onChange: (value: any) => handleChange("view_month_sal", value),
+      },
+      {
+        fieldName: "View Annual Salary",
+        name: "view_annual_sal",
+        type: "checkbox",
+        placeholder: "Enable Annual Salary view",
+        onChange: (value: any) => handleChange("view_annual_sal", value),
+      },
+      {
+        fieldName: "View TDS Summary",
+        name: "view_tds_summary",
+        type: "checkbox",
+        placeholder: "Enable TDS Summary view",
+        onChange: (value: any) => handleChange("view_tds_summary", value),
+      },
+      {
+        fieldName: "View Resignation",
+        name: "view_resign",
+        type: "checkbox",
+        placeholder: "Enable Resignation view",
+        onChange: (value: any) => handleChange("view_resign", value),
+      },
+      {
+        fieldName: "View Approving Authority",
+        name: "view_approv_auth",
+        type: "checkbox",
+        placeholder: "Enable viewing approving authority",
+        onChange: (value: any) => handleChange("view_approv_auth", value),
+      },
+      {
+        fieldName: "View ITD",
+        name: "view_itd",
+        type: "checkbox",
+        placeholder: "Enable viewing ITD",
+        onChange: (value: any) => handleChange("view_itd", value),
+      },
+      {
+        fieldName: "View Employees and Edit Roles",
+        name: "view_and_edit_roles",
+        type: "checkbox",
+        placeholder: "Enable viewing and editing roles",
+        onChange: (value: any) => handleChange("view_and_edit_roles", value),
+      },
 
-  const ip: IpType = [
-    {
-      section: "Create",
-      fields: [
-        {
-          name: "create_emp",
-          label: "Employees",
-          state: createEmp,
-          setter: setCreateEmp,
-        },
-        {
-          name: "create_attendance",
-          label: "Attendance",
-          state: createAttendance,
-          setter: setCreateAttendance,
-        },
-        {
-          name: "create_bulk_attend",
-          label: "Bulk Attendance",
-          state: createBulkAttend,
-          setter: setCreateBulkAttend,
-        },
-        {
-          name: "create_leave",
-          label: "Leaves",
-          state: createLeave,
-          setter: setCreateLeave,
-        },
-        {
-          name: "create_leave_credit",
-          label: "Leaves Credit",
-          state: createLeaveCredit,
-          setter: setCreateLeaveCredit,
-        },
-        {
-          name: "create_assets",
-          label: "Assets & Location",
-          state: createAssets,
-          setter: setCreateAssets,
-        },
-        {
-          name: "create_payroll",
-          label: "Payroll",
-          state: createPayroll,
-          setter: setCreatePayroll,
-        },
-        {
-          name: "create_salary",
-          label: "Salary",
-          state: createSalary,
-          setter: setCreateSalary,
-        },
-        {
-          name: "create_tds_on_sal",
-          label: "TDS On Salary",
-          state: createTDSonSal,
-          setter: setCreateTDSonSal,
-        },
-        {
-          name: "create_manage_auth",
-          label: "Approving Authority",
-          state: createManageAuth,
-          setter: setCreateManageAuth,
-        },
-        {
-          name: "create_holiday",
-          label: "Holidays",
-          state: createHoliday,
-          setter: setCreateHoliday,
-        },
-      ],
-    },
-    {
-      section: "View",
-      fields: [
-        {
-          name: "view_emp",
-          label: "Employees",
-          state: viewEmp,
-          setter: setViewEmp,
-        },
-        {
-          name: "view_emp_documents",
-          label: "Documents",
-          state: viewEmpDoc,
-          setter: setViewEmpDoc,
-        },
-        {
-          name: "view_emp_attendance",
-          label: "Attendance",
-          state: viewAttendance,
-          setter: setViewAttendance,
-        },
-        {
-          name: "view_bulk_attendance",
-          label: "Bulk Attendance",
-          state: viewBulkAttendance,
-          setter: setViewBulkAttendance,
-        },
-        {
-          name: "view_emp_leaves",
-          label: "Leaves",
-          state: viewLeaves,
-          setter: setViewLeaves,
-        },
-        {
-          name: "view_leave_credit",
-          label: "Leaves Credit",
-          state: viewLeaveCredit,
-          setter: setViewLeaveCredit,
-        },
-        {
-          name: "view_emp_reimbursement",
-          label: "Reimbursements",
-          state: viewReimbursement,
-          setter: setViewReimbursement,
-        },
-        {
-          name: "view_emp_travel_req",
-          label: "Travel Requests",
-          state: viewTravelReq,
-          setter: setViewTravelReq,
-        },
-        {
-          name: "view_asset_req_return",
-          label: "Assets Request & Return",
-          state: viewAssetReqReturn,
-          setter: setViewAssetReqReturn,
-        },
-        {
-          name: "view_emp_payroll",
-          label: "Payroll",
-          state: viewPayroll,
-          setter: setViewPayroll,
-        },
-        {
-          name: "view_salary",
-          label: "Salary",
-          state: viewSalary,
-          setter: setViewSalary,
-        },
-        {
-          name: "view_emp_itd",
-          label: "Income Tax Declaration",
-          state: viewITD,
-          setter: setViewITD,
-        },
-        {
-          name: "view_month_sal",
-          label: "Monthly Salary",
-          state: viewMonthSalary,
-          setter: setViewMonthSalary,
-        },
-        {
-          name: "view_annual_sal",
-          label: "Annual Salary",
-          state: viewAnnualSalary,
-          setter: setViewAnnualSalary,
-        },
-        {
-          name: "view_tds_summary",
-          label: "TDS Summary",
-          state: viewTDSsummary,
-          setter: setViewTDSsummary,
-        },
-        {
-          name: "view_resign",
-          label: "Resignation",
-          state: viewResignation,
-          setter: setViewResignation,
-        },
-      ],
-    },
-    {
-      section: "Edit",
-      fields: [
-        {
-          name: "edit_emp",
-          label: "Employees",
-          state: editEmp,
-          setter: setEditEmp,
-        },
-        {
-          name: "edit_attendance",
-          label: "Attendance",
-          state: editAttendance,
-          setter: setEditAttendance,
-        },
-        {
-          name: "edit_bulk_attendance",
-          label: "Bulk Attendance",
-          state: editBulkAttendance,
-          setter: setEditBulkAttendance,
-        },
-        {
-          name: "edit_leaves",
-          label: "Leaves",
-          state: editLeaves,
-          setter: setEditLeaves,
-        },
-        {
-          name: "edit_leave_credit",
-          label: "Leaves Credit",
-          state: editLeaveCredit,
-          setter: setEditLeaveCredit,
-        },
-        {
-          name: "edit_asset_location",
-          label: "Assets & Location",
-          state: editAssetLocation,
-          setter: setEditAssetLocation,
-        },
-        {
-          name: "edit_payroll",
-          label: "Payroll",
-          state: editPayroll,
-          setter: setEditPayroll,
-        },
-        {
-          name: "edit_salary",
-          label: "Salary",
-          state: editSalary,
-          setter: setEditSalary,
-        },
-        {
-          name: "edit_manage_auth",
-          label: "Approving Authority",
-          state: editManageAuth,
-          setter: setEditManageAuth,
-        },
-      ],
-    },
-    {
-      section: "Delete",
-      fields: [
-        {
-          name: "del_emp",
-          label: "Employees",
-          state: delEmp,
-          setter: setDelEmp,
-        },
-        {
-          name: "del_documents",
-          label: "Documents",
-          state: delDoc,
-          setter: setDelDoc,
-        },
-        {
-          name: "del_attendance",
-          label: "Attendance",
-          state: delAttendance,
-          setter: setDelAttendance,
-        },
-        {
-          name: "del_bulk_attendance",
-          label: "Bulk Attendance",
-          state: delBulkAttendance,
-          setter: setDelBulkAttendance,
-        },
-        {
-          name: "del_leaves",
-          label: "Leaves",
-          state: delLeaves,
-          setter: setDelLeaves,
-        },
-        {
-          name: "del_leave_credit",
-          label: "Leaves Credit",
-          state: delLeaveCredit,
-          setter: setDelLeaveCredit,
-        },
-        {
-          name: "del_reimbursement",
-          label: "Reimbursements",
-          state: delReimbursement,
-          setter: setDelReimbursement,
-        },
-        {
-          name: "del_travel_req",
-          label: "Travel Requests",
-          state: delTravelReq,
-          setter: setDelTravelReq,
-        },
-        {
-          name: "del_asset_req_return",
-          label: "Assets Request & Return",
-          state: delAssetReqReturn,
-          setter: setDelAssetReqReturn,
-        },
-        {
-          name: "del_payroll",
-          label: "Payroll",
-          state: delPayroll,
-          setter: setDelPayroll,
-        },
-        {
-          name: "del_salary",
-          label: "Salary",
-          state: delSalary,
-          setter: setDelSalary,
-        },
-        {
-          name: "del_manage_auth",
-          label: "Approving Authority",
-          state: delManageAuth,
-          setter: setDelManageAuth,
-        },
-      ],
-    },
-  ];
+      {
+        fieldName: "Edit Employees",
+        name: "edit_emp",
+        type: "checkbox",
+        placeholder: "Enable Employees edit",
+        onChange: (value: any) => handleChange("edit_emp", value),
+      },
+      {
+        fieldName: "Edit Attendance",
+        name: "edit_attendance",
+        type: "checkbox",
+        placeholder: "Enable Attendance edit",
+        onChange: (value: any) => handleChange("edit_attendance", value),
+      },
+      {
+        fieldName: "Edit Bulk Attendance",
+        name: "edit_bulk_attendance",
+        type: "checkbox",
+        placeholder: "Enable Bulk Attendance edit",
+        onChange: (value: any) => handleChange("edit_bulk_attendance", value),
+      },
+      {
+        fieldName: "Edit Leaves",
+        name: "edit_leaves",
+        type: "checkbox",
+        placeholder: "Enable Leaves edit",
+        onChange: (value: any) => handleChange("edit_leaves", value),
+      },
+      {
+        fieldName: "Edit Leaves Credit",
+        name: "edit_leave_credit",
+        type: "checkbox",
+        placeholder: "Enable Leaves Credit edit",
+        onChange: (value: any) => handleChange("edit_leave_credit", value),
+      },
+      {
+        fieldName: "Edit Assets & Location",
+        name: "edit_asset_location",
+        type: "checkbox",
+        placeholder: "Enable Assets & Location edit",
+        onChange: (value: any) => handleChange("edit_asset_location", value),
+      },
+      {
+        fieldName: "Edit Payroll",
+        name: "edit_payroll",
+        type: "checkbox",
+        placeholder: "Enable Payroll edit",
+        onChange: (value: any) => handleChange("edit_payroll", value),
+      },
+      {
+        fieldName: "Edit Salary",
+        name: "edit_salary",
+        type: "checkbox",
+        placeholder: "Enable Salary edit",
+        onChange: (value: any) => handleChange("edit_salary", value),
+      },
 
-  const handleSubmit = async () => {};
+      {
+        fieldName: "Delete Employees",
+        name: "del_emp",
+        type: "checkbox",
+        placeholder: "Enable Employees deletion",
+        onChange: (value: any) => handleChange("del_emp", value),
+      },
+      {
+        fieldName: "Delete Documents",
+        name: "del_documents",
+        type: "checkbox",
+        placeholder: "Enable Documents deletion",
+        onChange: (value: any) => handleChange("del_documents", value),
+      },
+      {
+        fieldName: "Delete Attendance",
+        name: "del_attendance",
+        type: "checkbox",
+        placeholder: "Enable Attendance deletion",
+        onChange: (value: any) => handleChange("del_attendance", value),
+      },
+      {
+        fieldName: "Delete Bulk Attendance",
+        name: "del_bulk_attendance",
+        type: "checkbox",
+        placeholder: "Enable Bulk Attendance deletion",
+        onChange: (value: any) => handleChange("del_bulk_attendance", value),
+      },
+      {
+        fieldName: "Delete Leaves",
+        name: "del_leaves",
+        type: "checkbox",
+        placeholder: "Enable Leaves deletion",
+        onChange: (value: any) => handleChange("del_leaves", value),
+      },
+      {
+        fieldName: "Delete Leaves Credit",
+        name: "del_leave_credit",
+        type: "checkbox",
+        placeholder: "Enable Leaves Credit deletion",
+        onChange: (value: any) => handleChange("del_leave_credit", value),
+      },
+      {
+        fieldName: "Delete Reimbursements",
+        name: "del_reimbursement",
+        type: "checkbox",
+        placeholder: "Enable Reimbursements deletion",
+        onChange: (value: any) => handleChange("del_reimbursement", value),
+      },
+      {
+        fieldName: "Delete Travel Requests",
+        name: "del_travel_req",
+        type: "checkbox",
+        placeholder: "Enable Travel Requests deletion",
+        onChange: (value: any) => handleChange("del_travel_req", value),
+      },
+      {
+        fieldName: "Delete Assets Request & Return",
+        name: "del_asset_req_return",
+        type: "checkbox",
+        placeholder: "Enable Assets Request & Return deletion",
+        onChange: (value: any) => handleChange("del_asset_req_return", value),
+      },
+      {
+        fieldName: "Delete Payroll",
+        name: "del_payroll",
+        type: "checkbox",
+        placeholder: "Enable Payroll deletion",
+        onChange: (value: any) => handleChange("del_payroll", value),
+      },
+      {
+        fieldName: "Delete Salary",
+        name: "del_salary",
+        type: "checkbox",
+        placeholder: "Enable Salary deletion",
+        onChange: (value: any) => handleChange("del_salary", value),
+      },
+      {
+        fieldName: "Delete ITD",
+        name: "del_tds_summary",
+        type: "checkbox",
+        placeholder: "Enable deletion of ITD",
+        onChange: (value: any) => handleChange("del_tds_summary", value),
+      },
+      {
+        fieldName: "Delete Approving Authority",
+        name: "del_approv_auth",
+        type: "checkbox",
+        placeholder: "Enable deletion of approving authority",
+        onChange: (value: any) => handleChange("del_approv_auth", value),
+      },
+      {
+        fieldName: "Delete Holidays",
+        name: "del_holiday",
+        type: "checkbox",
+        placeholder: "Enable deletion of holidays",
+        onChange: (value: any) => handleChange("del_holiday", value),
+      },
+      {
+        fieldName: "Delete Resignation",
+        name: "del_resignation",
+        type: "checkbox",
+        placeholder: "Enable deletion of resignation",
+        onChange: (value: any) => handleChange("del_resignation", value),
+      },
+      {
+        fieldName: "Manage Permissions",
+        name: "manage_permissions",
+        type: "checkbox",
+        placeholder: "Enable managing permissions",
+        onChange: (value: any) => handleChange("manage_permissions", value),
+      },
+    ],
+  };
+
+  const handleSubmit = async () => {
+    try {
+      await dispatch(addAccess(formData)).unwrap();
+      setOpen(false);
+    } catch (error) {
+      console.error("Error adding user:", error);
+    }
+  };
   const handleRightModel = () => {
     setOpen(!open);
     setTitle("Access Controller");

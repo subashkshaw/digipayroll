@@ -41,3 +41,60 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    console.log(body, "body data");
+    if (!body || Object.keys(body).length === 0) {
+      return NextResponse.json(
+        { error: "Request body is empty" },
+        { status: 400 }
+      );
+    }
+
+    console.log("Received user data:", body);
+    const hashedPassword = bcrypt.hashSync(body.password, 8);
+
+    const updateUser = await prisma.users.update({
+      where: {
+        id: body.id,
+      },
+      data: {
+        eid: body.eid,
+        name: body.name,
+        email: body.email,
+        password: hashedPassword,
+        dob: body.dob,
+        gender: body.gender,
+        marital_status: body.marital_status,
+        doj: body.doj,
+        organizationId: body.organizationId,
+        manager: body.manager,
+        department: body.department,
+        designation: body.designation,
+        mob_number: body.mob_number,
+        employment: body.employment,
+        roleId: body.roleId,
+        city: body.city,
+        state: body.state,
+        pin_code: body.pin_code,
+        profile_pic: body.profile_pic,
+        baseSalary: body.baseSalary,
+      },
+    });
+
+    console.log("Updated user:", updateUser);
+
+    return NextResponse.json(
+      { message: "User updated successfully", data: updateUser || {} },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error("Error during PUT request:", error);
+    return NextResponse.json(
+      { error: "An error occurred while processing the update request" },
+      { status: 500 }
+    );
+  }
+}

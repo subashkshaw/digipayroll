@@ -1,13 +1,14 @@
 import apiClient from "@/app/utils/apiClient";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Types } from "mongoose";
 
 // Thunks for Asset operations
-export const getAsset = createAsyncThunk(
+export const getAssets = createAsyncThunk(
   "asset/all",
-  async (props: undefined, { rejectWithValue }: any) => {
+  async (_, { rejectWithValue }: any) => {
     try {
       const response = await apiClient.get<any>("asset/all");
-      return response.data;
+      return response.data.asset;
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -19,6 +20,8 @@ export const addAsset = createAsyncThunk(
   async (
     {
       eid,
+      userId,
+      organizationId,
       type,
       request_type,
       completion_date,
@@ -30,9 +33,11 @@ export const addAsset = createAsyncThunk(
   ) => {
     const payload = {
       eid,
+      userID: new Types.ObjectId(userId),
+      organizationId: new Types.ObjectId(organizationId),
       type,
       request_type,
-      completion_date,
+      completion_date: new Date(completion_date),
       location,
       remarks,
       approver,
@@ -86,16 +91,15 @@ export const updateAsset = createAsyncThunk(
 
 export const deleteAsset = createAsyncThunk(
   "asset/delete",
-  async ({ id }: any, { rejectWithValue }: any) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.delete<any>(`asset/${id}`);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error);
+      await apiClient.delete(`asset/${id}`); // Send ID in URL
+      return id; // Return the deleted user's ID
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data || error.message);
     }
   }
 );
-
 // Asset State Interface
 export interface AssetState {
   isLoading: boolean;
@@ -132,100 +136,75 @@ export const assetSlice = createSlice({
   name: "asset",
   initialState,
   reducers: {
-    clearAssetState: () => {
-      return { ...initialState };
-    },
+    clearAssetState: () => initialState,
   },
-  extraReducers: (builder: any) => {
+  extraReducers: (builder) => {
     builder
-      .addCase(getAsset.pending, () => ({
-        isLoading: true,
-        isError: false,
-        error: "",
-      }))
-      .addCase(getAsset.fulfilled, (state: any, action: PayloadAction<any>) => {
-        const { assets, ...rest } = action?.payload?.data || {};
-
-        return {
-          ...initialState,
-          isLoading: false,
-          data: assets || [],
-          others: rest,
-        };
+      // Handle getAssets
+      .addCase(getAssets.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.error = "";
       })
-      .addCase(getAsset.rejected, (state: any, action: PayloadAction<any>) => ({
-        isLoading: false,
-        isError: true,
-        error: action.payload?.message,
-      }))
-      .addCase(addAsset.pending, () => ({
-        isLoading: true,
-        isError: false,
-        error: "",
-      }))
-      .addCase(
-        addAsset.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...initialState,
-          isLoading: false,
-          data: action?.payload?.data?.asset,
-        })
-      )
-      .addCase(addAsset.rejected, (state: any, action: PayloadAction<any>) => ({
-        isLoading: false,
-        isError: true,
-        error: action.payload?.message,
-      }))
-      .addCase(updateAsset.pending, (state: any) => ({
-        ...state,
-        isUpdating: true,
-        updatingError: "",
-      }))
-      .addCase(
-        updateAsset.fulfilled,
-        (state: any, action: PayloadAction<any>) => {
-          const { asset, ...rest } = action?.payload?.data || {};
+      .addCase(getAssets.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.data = action.payload || [];
+      })
+      .addCase(getAssets.rejected, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.error = action.payload?.message || "An error occurred.";
+      })
 
-          return {
-            ...state,
-            isUpdating: false,
-            data: asset || [],
-            others: rest,
-          };
-        }
-      )
-      .addCase(
-        updateAsset.rejected,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isUpdating: false,
-          updatingError: action.payload?.message,
-        })
-      )
-      .addCase(deleteAsset.pending, () => ({
-        isDeleting: true,
-        deletingError: "",
-      }))
-      .addCase(
-        deleteAsset.fulfilled,
-        (state: any, action: PayloadAction<any>) => {
-          const { asset, ...rest } = action?.payload?.data || {};
+      // Handle addAssets
+      .addCase(addAsset.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.error = "";
+      })
+      .addCase(addAsset.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.data.push(action.payload); // Add the new Asset to the list
+      })
+      .addCase(addAsset.rejected, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.error = action.payload?.message || "Failed to add Asset.";
+      })
 
-          return {
-            ...state,
-            isDeleting: false,
-            data: asset || [],
-            others: rest,
-          };
-        }
-      )
-      .addCase(
-        deleteAsset.rejected,
-        (state: any, action: PayloadAction<any>) => ({
-          isDeleting: false,
-          deletingError: action.payload?.message,
-        })
-      );
+      // Handle updateAssets
+      .addCase(updateAsset.pending, (state) => {
+        state.isUpdating = true;
+        state.updatingError = "";
+      })
+      .addCase(updateAsset.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isUpdating = false;
+        const updatedOrg = action.payload;
+        state.data = state.data.map((Asset) =>
+          Asset.oid === updatedOrg.oid ? updatedOrg : Asset
+        );
+      })
+      .addCase(updateAsset.rejected, (state, action: PayloadAction<any>) => {
+        state.isUpdating = false;
+        state.updatingError =
+          action.payload?.message || "Failed to update Asset.";
+      })
+
+      // Handle deleteAssets
+      .addCase(deleteAsset.pending, (state) => {
+        state.isDeleting = true;
+        state.deletingError = "";
+      })
+      .addCase(deleteAsset.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isDeleting = false;
+        const deletedId = action.payload.id;
+        state.data = state.data.filter((Asset) => Asset.id !== deletedId);
+      })
+      .addCase(deleteAsset.rejected, (state, action: PayloadAction<any>) => {
+        state.isDeleting = false;
+        state.deletingError =
+          action.payload?.message || "Failed to delete Asset.";
+      });
   },
 });
 

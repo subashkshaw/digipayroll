@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     // Correct handling of response
     return NextResponse.json(
       {
-        message: "asset created successfully",
-        asset: asset || {},
+        message: "Asset created successfully",
+        data: asset || {},
       },
       { status: 200 }
     );

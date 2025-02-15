@@ -54,16 +54,15 @@ export const updateBank = createAsyncThunk(
 
 export const deleteBank = createAsyncThunk(
   "bank/delete",
-  async ({ bankId }: any, { rejectWithValue }: any) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.delete<any>(`user/bank/${bankId}`);
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error);
+      await apiClient.delete(`user/bank/${id}`); // Send ID in URL
+      return id; // Return the deleted user's ID
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data || error.message);
     }
   }
 );
-
 // Bank State Interface
 export interface BankState {
   isLoading: boolean;

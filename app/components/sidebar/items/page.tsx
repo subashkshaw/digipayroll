@@ -20,7 +20,11 @@ const Menu = ({ children }: SidebarProps) => {
 
   return (
     <>
-      <aside className={` ${expanded ? "w-64" : "w-16"}`}>
+      <aside
+        className={` ${
+          expanded ? "w-64" : "w-16"
+        } transition-width duration-300`}
+      >
         <nav className="h-full flex flex-col bg-white border-r rounded-md shadow-md">
           <div className="p-4 pb-2 flex justify-between items-center">
             <button

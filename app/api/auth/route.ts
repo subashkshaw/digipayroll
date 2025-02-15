@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         id: user.id,
+        organizationId: user.organizationId || "",
         eid: user.eid || "",
         name: user.name || "",
         email: user.email,

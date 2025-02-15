@@ -6,10 +6,10 @@ const UserLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex h-screen p-3">
       <Sidebar />
-      <div className={`flex-1 h-screen`}>
+      <main className="flex-1 h-screen overflow-hidden">
         <TopNav />
-        <div className="p-4">{children}</div>
-      </div>
+        <div className="p-4 overflow-auto h-full">{children}</div>
+      </main>
     </div>
   );
 };

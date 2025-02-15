@@ -1,13 +1,14 @@
 import apiClient from "@/app/utils/apiClient";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { Types } from "mongoose";
 
 // Thunks for Attendance operations
 export const getAttendance = createAsyncThunk(
   "attendance/all",
-  async (props: undefined, { rejectWithValue }: any) => {
+  async (_, { rejectWithValue }: any) => {
     try {
       const response = await apiClient.get<any>("attendance/all");
-      return response.data;
+      return response.data.attendance;
     } catch (error) {
       return rejectWithValue(error);
     }
@@ -16,11 +17,22 @@ export const getAttendance = createAsyncThunk(
 
 export const markAttendance = createAsyncThunk(
   "attendance/mark",
-  async ({ userId, date, status }: any, { rejectWithValue }: any) => {
-    const payload = { userId, date, status };
+  async (
+    { organizationId, eid, userId, location, shift }: any,
+    { rejectWithValue }: any
+  ) => {
+    const payload = {
+      eid,
+      userID: new Types.ObjectId(userId),
+      organizationId: new Types.ObjectId(organizationId),
+      clockin: new Date(),
+      clockout: new Date(),
+      location,
+      shift,
+    };
     try {
       const response = await apiClient.post<any, typeof payload>(
-        "attendance/mark",
+        "attendance",
         payload
       );
       return response.data;
@@ -36,7 +48,7 @@ export const updateAttendance = createAsyncThunk(
     const payload = { status };
     try {
       const response = await apiClient.put<any, typeof payload>(
-        `attendance/update/${attendanceId}`,
+        `attendance/${attendanceId}`,
         payload
       );
       return response.data;
@@ -45,21 +57,17 @@ export const updateAttendance = createAsyncThunk(
     }
   }
 );
-
 export const deleteAttendance = createAsyncThunk(
   "attendance/delete",
-  async ({ attendanceId }: any, { rejectWithValue }: any) => {
+  async (id: string, { rejectWithValue }) => {
     try {
-      const response = await apiClient.delete<any>(
-        `attendance/delete/${attendanceId}`
-      );
-      return response.data;
-    } catch (error) {
-      return rejectWithValue(error);
+      await apiClient.delete(`attendance/${id}`); // Send ID in URL
+      return id; // Return the deleted user's ID
+    } catch (error: any) {
+      return rejectWithValue(error?.response?.data || error.message);
     }
   }
 );
-
 // Attendance State Interface
 export interface AttendanceState {
   isLoading: boolean;
@@ -92,106 +100,87 @@ export const attendanceSlice = createSlice({
   reducers: {
     clearAttendanceState: () => initialState,
   },
-  extraReducers: (builder: any) => {
+  extraReducers: (builder) => {
     builder
-      // Get Attendance
-      .addCase(getAttendance.pending, (state: any) => ({
-        ...state,
-        isLoading: true,
-        isError: false,
-        error: "",
-      }))
-      .addCase(
-        getAttendance.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isLoading: false,
-          data: action.payload?.data?.attendance || [],
-        })
-      )
-      .addCase(
-        getAttendance.rejected,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isLoading: false,
-          isError: true,
-          error: action.payload?.message,
-        })
-      )
-      // Mark Attendance
-      .addCase(markAttendance.pending, (state: any) => ({
-        ...state,
-        isLoading: true,
-        isError: false,
-        error: "",
-      }))
+      // Handle getAttendance
+      .addCase(getAttendance.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.error = "";
+      })
+      .addCase(getAttendance.fulfilled, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.data = action.payload || [];
+      })
+      .addCase(getAttendance.rejected, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.error = action.payload?.message || "An error occurred.";
+      })
+
+      // Handle markAttendance
+      .addCase(markAttendance.pending, (state) => {
+        state.isLoading = true;
+        state.isError = false;
+        state.error = "";
+      })
       .addCase(
         markAttendance.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isLoading: false,
-          data: [...state.data, action.payload?.data?.attendance],
-        })
+        (state, action: PayloadAction<any>) => {
+          state.isLoading = false;
+          state.data.push(action.payload); // Add the new Attendance to the list
+        }
       )
-      .addCase(
-        markAttendance.rejected,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isLoading: false,
-          isError: true,
-          error: action.payload?.message,
-        })
-      )
-      // Update Attendance
-      .addCase(updateAttendance.pending, (state: any) => ({
-        ...state,
-        isUpdating: true,
-        updatingError: "",
-      }))
+      .addCase(markAttendance.rejected, (state, action: PayloadAction<any>) => {
+        state.isLoading = false;
+        state.isError = true;
+        state.error = action.payload?.message || "Failed to add Attendance.";
+      })
+
+      // Handle updateAttendance
+      .addCase(updateAttendance.pending, (state) => {
+        state.isUpdating = true;
+        state.updatingError = "";
+      })
       .addCase(
         updateAttendance.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isUpdating: false,
-          data: state.data.map((attendance: any) =>
-            attendance.id === action.payload?.data?.attendance?.id
-              ? action.payload?.data?.attendance
-              : attendance
-          ),
-        })
+        (state, action: PayloadAction<any>) => {
+          state.isUpdating = false;
+          const updatedOrg = action.payload;
+          state.data = state.data.map((Attend) =>
+            Attend.oid === updatedOrg.oid ? updatedOrg : Attend
+          );
+        }
       )
       .addCase(
         updateAttendance.rejected,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isUpdating: false,
-          updatingError: action.payload?.message,
-        })
+        (state, action: PayloadAction<any>) => {
+          state.isUpdating = false;
+          state.updatingError =
+            action.payload?.message || "Failed to update Attendance.";
+        }
       )
-      // Delete Attendance
-      .addCase(deleteAttendance.pending, (state: any) => ({
-        ...state,
-        isDeleting: true,
-        deletingError: "",
-      }))
+
+      // Handle deleteAttendance
+      .addCase(deleteAttendance.pending, (state) => {
+        state.isDeleting = true;
+        state.deletingError = "";
+      })
       .addCase(
         deleteAttendance.fulfilled,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isDeleting: false,
-          data: state.data.filter(
-            (attendance: any) =>
-              attendance.id !== action.payload?.data?.attendanceId
-          ),
-        })
+        (state, action: PayloadAction<any>) => {
+          state.isDeleting = false;
+          const deletedId = action.payload.id;
+          state.data = state.data.filter((Attend) => Attend.id !== deletedId);
+        }
       )
       .addCase(
         deleteAttendance.rejected,
-        (state: any, action: PayloadAction<any>) => ({
-          ...state,
-          isDeleting: false,
-          deletingError: action.payload?.message,
-        })
+        (state, action: PayloadAction<any>) => {
+          state.isDeleting = false;
+          state.deletingError =
+            action.payload?.message || "Failed to delete Attendance.";
+        }
       );
   },
 });
